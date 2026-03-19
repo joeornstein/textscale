@@ -9,6 +9,7 @@ true_scores <- runif(n_docs)
 emb <- outer(true_scores, runif(n_dims)) +
   matrix(rnorm(n_docs * n_dims, sd = 0.1), n_docs)
 colnames(emb) <- paste0("d", seq_len(n_dims))
+rownames(emb) <- as.character(seq_len(n_docs))
 
 # Annotate based on true ordering
 comparisons <- generate_comparisons(as.character(seq_len(n_docs)))
@@ -18,10 +19,17 @@ comparisons$winner <- ifelse(
 )
 
 model <- fit_model(comparisons, emb)
+model_svm <- fit_model(comparisons, emb, method = "svm")
+
+# --- Ridge (default) ----------------------------------------------------------
 
 test_that("fit_model returns a textscale_model", {
   expect_s3_class(model, "textscale_model")
-  expect_named(model, c("beta", "lambda", "cv_fit", "glmnet_fit"))
+  expect_named(model, c("beta", "method", "lambda", "cv_fit", "glmnet_fit", "sigma_post"))
+})
+
+test_that("ridge model records method", {
+  expect_equal(model$method, "ridge")
 })
 
 test_that("beta has one entry per embedding dimension", {
@@ -41,7 +49,104 @@ test_that("scores correlate strongly with the true latent dimension", {
 
 test_that("validate_model returns expected columns and sane accuracy", {
   result <- validate_model(model, comparisons, emb)
-  expect_named(result, c("n_pairs", "n_correct", "accuracy"))
+  expect_named(result, c("n_pairs", "n_correct", "accuracy", "ici"))
   expect_equal(result$n_pairs, nrow(comparisons))
   expect_gte(result$accuracy, 0.5)
+})
+
+# --- SVM ----------------------------------------------------------------------
+
+test_that("fit_model with method='svm' returns a textscale_model", {
+  expect_s3_class(model_svm, "textscale_model")
+  expect_named(model_svm, c("beta", "method", "svm_fit"))
+})
+
+test_that("svm model records method", {
+  expect_equal(model_svm$method, "svm")
+})
+
+test_that("svm beta has one entry per embedding dimension", {
+  expect_length(model_svm$beta, n_dims)
+})
+
+test_that("svm scores correlate strongly with the true latent dimension", {
+  scores <- score_documents(model_svm, emb)
+  expect_gt(abs(cor(scores, true_scores)), 0.95)
+})
+
+test_that("validate_model works with svm model", {
+  result <- validate_model(model_svm, comparisons, emb)
+  expect_named(result, c("n_pairs", "n_correct", "accuracy", "ici"))
+  expect_gte(result$accuracy, 0.5)
+})
+
+# --- Confidence intervals (Laplace) ------------------------------------------
+
+test_that("score_documents with ci=TRUE returns a tibble with correct columns", {
+  result <- score_documents(model, emb, ci = TRUE)
+  expect_s3_class(result, "tbl_df")
+  expect_named(result, c("score", "lower", "upper"))
+  expect_equal(nrow(result), n_docs)
+})
+
+test_that("Laplace CI bounds bracket the point estimate", {
+  result <- score_documents(model, emb, ci = TRUE)
+  expect_true(all(result$lower <= result$score))
+  expect_true(all(result$score <= result$upper))
+})
+
+test_that("sigma_post is a square matrix with side n_dims", {
+  expect_equal(dim(model$sigma_post), c(n_dims, n_dims))
+})
+
+test_that("narrower level produces narrower CI", {
+  ci_95 <- score_documents(model, emb, ci = TRUE, level = 0.95)
+  ci_50 <- score_documents(model, emb, ci = TRUE, level = 0.50)
+  expect_true(all((ci_95$upper - ci_95$lower) >= (ci_50$upper - ci_50$lower)))
+})
+
+test_that("Laplace CI errors for SVM model", {
+  expect_snapshot(
+    error = TRUE,
+    score_documents(model_svm, emb, ci = TRUE, ci_method = "laplace")
+  )
+})
+
+# --- Confidence intervals (bootstrap) ----------------------------------------
+
+test_that("bootstrap CI returns a tibble with correct structure", {
+  result <- score_documents(model, emb, ci = TRUE, ci_method = "bootstrap",
+                            n_boot = 10, comparisons = comparisons)
+  expect_s3_class(result, "tbl_df")
+  expect_named(result, c("score", "lower", "upper"))
+  expect_equal(nrow(result), n_docs)
+})
+
+test_that("bootstrap CI bounds bracket the point estimate", {
+  result <- score_documents(model, emb, ci = TRUE, ci_method = "bootstrap",
+                            n_boot = 10, comparisons = comparisons)
+  expect_true(all(result$lower <= result$score))
+  expect_true(all(result$score <= result$upper))
+})
+
+test_that("bootstrap CI works for SVM model", {
+  result <- score_documents(model_svm, emb, ci = TRUE, ci_method = "bootstrap",
+                            n_boot = 10, comparisons = comparisons)
+  expect_named(result, c("score", "lower", "upper"))
+})
+
+test_that("bootstrap CI errors without comparisons", {
+  expect_snapshot(
+    error = TRUE,
+    score_documents(model, emb, ci = TRUE, ci_method = "bootstrap")
+  )
+})
+
+# --- method argument ----------------------------------------------------------
+
+test_that("fit_model errors on invalid method", {
+  expect_snapshot(
+    error = TRUE,
+    fit_model(comparisons, emb, method = "gbm")
+  )
 })

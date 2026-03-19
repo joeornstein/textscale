@@ -7,6 +7,8 @@
 fit_model(
   comparisons,
   embeddings,
+  method = c("ridge", "lasso", "enet", "svm"),
+  alpha = 0.5,
   nlambda = 200,
   lambda_min_ratio = 1e-09,
   ...
@@ -23,30 +25,49 @@ in \code{comparisons} (i.e. row \code{i} is the embedding for the document
 at position \code{i} in the original \code{documents} vector passed to
 \code{\link[=generate_comparisons]{generate_comparisons()}}).}
 
+\item{method}{One of \code{"ridge"} (default), \code{"lasso"}, \code{"enet"}, or
+\code{"svm"}. Controls the fitting method used to identify the latent
+dimension. \code{"ridge"}, \code{"lasso"}, and \code{"enet"} use
+\code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}} with alpha 0, 1, and \code{alpha} respectively.
+\code{"svm"} fits a linear support vector machine via
+\code{\link[e1071:svm]{e1071::svm()}}.}
+
+\item{alpha}{The elastic net mixing parameter, used only when
+\code{method = "enet"}. Must be between 0 and 1 (0 = ridge, 1 =
+lasso). Defaults to \code{0.5}.}
+
 \item{nlambda}{Number of lambda values to evaluate during
-cross-validation. Defaults to \code{200}.}
+cross-validation. Defaults to \code{200}. Ignored when
+\code{method = "svm"}.}
 
 \item{lambda_min_ratio}{Ratio of the smallest to largest lambda
 evaluated. Defaults to \code{1e-9}. Increase if you see a warning that
-the optimal lambda is at the boundary of the search range.}
+the optimal lambda is at the boundary of the search range. Ignored
+when \code{method = "svm"}.}
 
-\item{...}{Additional arguments passed to \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}}.}
+\item{...}{Additional arguments passed to \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}}
+(for glmnet methods) or \code{\link[e1071:svm]{e1071::svm()}} (for \code{method = "svm"}).}
 }
 \value{
 A \code{textscale_model} object (a list) containing:
 \describe{
 \item{\code{beta}}{Coefficient vector defining the latent dimension
 (intercept excluded).}
-\item{\code{lambda}}{The selected regularization parameter.}
-\item{\code{cv_fit}}{The full \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}} object.}
+\item{\code{method}}{The fitting method used.}
+\item{\code{lambda}}{The selected regularization parameter. Present
+for glmnet methods only.}
+\item{\code{cv_fit}}{The full \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}} object. Present
+for glmnet methods only.}
 \item{\code{glmnet_fit}}{The \code{\link[glmnet:glmnet]{glmnet::glmnet()}} model refit at
-\code{lambda}.}
+\code{lambda}. Present for glmnet methods only.}
+\item{\code{svm_fit}}{The \code{\link[e1071:svm]{e1071::svm()}} model object. Present when
+\code{method = "svm"} only.}
 }
 }
 \description{
-Fits an L2-regularized logistic regression on the differences between
-document embeddings to identify a latent scaling dimension. The
-penalty parameter is selected by 10-fold cross-validation via
-\code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}}, then the model is refit at the optimal
-lambda.
+Fits a model on the differences between document embeddings to
+identify a latent scaling dimension. The default method is
+L2-regularized logistic regression (\code{"ridge"}), with alternatives
+including \code{"lasso"}, \code{"enet"} (elastic net), and \code{"svm"} (linear
+support vector machine).
 }

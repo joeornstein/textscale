@@ -22,7 +22,8 @@ passed to \code{\link[=generate_comparisons]{generate_comparisons()}}.}
 printed.}
 }
 \value{
-A tibble with columns \code{n_pairs}, \code{n_correct}, and \code{accuracy}.
+A tibble with columns \code{n_pairs}, \code{n_correct}, \code{accuracy},
+and \code{ici} (Integrated Calibration Index).
 }
 \description{
 Evaluates how well a fitted textscale model predicts the outcome of
@@ -34,6 +35,15 @@ observed \code{winner} label.
 A calibration plot of predicted P(A wins) against the observed
 proportion of A wins is printed by default. Perfect calibration
 corresponds to the 45° reference line.
+
+The \strong{Integrated Calibration Index (ICI)} is the mean absolute
+deviation of the calibration smooth from the diagonal, evaluated over
+a fine grid. It expresses the average miscalibration in probability
+units (e.g. 0.05 = predicted probabilities are off by ~5 percentage
+points on average). Values below ~0.03 are typical of well-calibrated
+models; values above ~0.07 suggest the model's predicted probabilities
+should be interpreted cautiously, though the rank ordering of document
+scores may still be valid.
 
 When \code{comparisons} contains a \code{split} column (produced by
 \code{\link[=generate_comparisons]{generate_comparisons()}} with \code{prop} supplied), only the

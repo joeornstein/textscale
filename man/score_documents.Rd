@@ -4,7 +4,15 @@
 \alias{score_documents}
 \title{Score documents on the latent dimension}
 \usage{
-score_documents(model, embeddings)
+score_documents(
+  model,
+  embeddings,
+  ci = FALSE,
+  level = 0.95,
+  ci_method = c("laplace", "bootstrap"),
+  n_boot = 500,
+  comparisons = NULL
+)
 }
 \arguments{
 \item{model}{A \code{textscale_model} object produced by
@@ -12,10 +20,27 @@ score_documents(model, embeddings)
 
 \item{embeddings}{A numeric matrix of document embeddings to score,
 with one row per document.}
+
+\item{ci}{Logical. If \code{TRUE}, return a tibble with \code{score},
+\code{lower}, and \code{upper} columns. Defaults to \code{FALSE}.}
+
+\item{level}{Confidence level for the interval. Defaults to \code{0.95}.}
+
+\item{ci_method}{One of \code{"laplace"} (default) or \code{"bootstrap"}.
+See \strong{Confidence interval methods} for details.}
+
+\item{n_boot}{Number of bootstrap resamples. Defaults to \code{500}.
+Ignored when \code{ci_method = "laplace"}.}
+
+\item{comparisons}{Annotated comparisons tibble produced by
+\code{\link[=annotate_comparisons]{annotate_comparisons()}}. Required when
+\code{ci_method = "bootstrap"}. If a \code{split} column is present, only
+training rows are resampled.}
 }
 \value{
-A numeric vector of latent dimension scores, one per
-document.
+When \code{ci = FALSE} (the default), a numeric vector of latent
+dimension scores, one per document. When \code{ci = TRUE}, a tibble
+with columns \code{score}, \code{lower}, and \code{upper}.
 }
 \description{
 Projects document embeddings onto the latent dimension identified by
@@ -24,3 +49,26 @@ a fitted textscale model. Scores are the linear predictor
 are therefore comparable across documents but arbitrary up to a
 linear transformation.
 }
+\details{
+When \code{ci = TRUE}, a tibble is returned with columns \code{score},
+\code{lower}, and \code{upper} instead of a plain numeric vector.
+}
+\section{Confidence interval methods}{
+
+
+\strong{\code{"laplace"}} (default): Derives per-document score variances from
+the Laplace approximation to the posterior covariance of \code{beta}:
+\verb{Var(score_i) = x_i' * (X'WX + lambda*I)^\{-1\} * x_i}, where \code{X}
+is the matrix of training embedding differences and \code{W} is the
+diagonal matrix of fitted working weights. This is fast (a single
+matrix multiply) and treats \code{lambda} as fixed at the CV-selected
+value. Not available for \code{method = "svm"} models.
+
+\strong{\code{"bootstrap"}}: Resamples training pairs with replacement and
+refits the model \code{n_boot} times at the original fixed \code{lambda},
+then takes empirical quantiles of the resulting score distributions.
+Slower but propagates more of the sampling variability, and works
+for all model types including \code{"svm"}. Requires \code{comparisons} to
+be supplied.
+}
+

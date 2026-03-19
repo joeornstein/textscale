@@ -51,4 +51,10 @@ Most prompts will use \code{{{text_a}}} and \code{{{text_b}}}.
 When \code{path} is supplied the underlying \code{\link[ellmer:batch_chat]{ellmer::batch_chat_text()}}
 call caches its results to that file, so interrupted jobs can be
 resumed without re-calling the API.
+
+Before sending requests to the API, the function prints an estimated
+cost based on approximate token counts (1 token ≈ 4 characters) and
+published OpenAI prices. The estimate assumes one output token per
+comparison (single-letter response). Prices may be out of date; see
+\url{https://openai.com/api/pricing/} for current rates.
 }
