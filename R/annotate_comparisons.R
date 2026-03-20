@@ -124,7 +124,10 @@ annotate_comparisons <- function(
   if (n_new    > 0) message(n_new,    " comparison(s) require annotation.")
 
   if (n_new == 0) {
-    if (!is.null(cache)) saveRDS(comparisons, cache)
+    if (!is.null(cache)) {
+      .ensure_dir(cache)
+      saveRDS(comparisons, cache)
+    }
     return(comparisons)
   }
 
@@ -148,6 +151,7 @@ annotate_comparisons <- function(
   comparisons$winner[needs_annotation] <- trimws(responses)
 
   if (!is.null(cache)) {
+    .ensure_dir(cache)
     saveRDS(comparisons, cache)
   }
 

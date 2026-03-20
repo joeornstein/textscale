@@ -48,6 +48,7 @@ get_embeddings <- function(documents, cache = NULL, ...) {
     cached <- if (!is.null(cached)) rbind(cached, new_emb) else new_emb
 
     if (!is.null(cache)) {
+      .ensure_dir(cache)
       saveRDS(cached, cache)
     }
   }
