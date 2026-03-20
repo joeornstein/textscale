@@ -1,5 +1,17 @@
 # textscale (development)
 
+* `textscale()` gains a `ci_method` argument (`"laplace"` or `"bootstrap"`) passed to `score_documents()`. `comparisons` is now forwarded automatically so `ci_method = "bootstrap"` works without extra steps.
+
+* `textscale()` now defaults to `ci = TRUE` (scores are returned as a tibble with `score`, `lower`, and `upper` columns). The `embeddings_cache` and `annotations_cache` arguments now default to `"textscale_embeddings.rds"` and `"textscale_annotations.rds"` in the working directory, enabling caching without any configuration.
+
+* New `textscale()` function runs the full pipeline in a single call:
+  generates comparisons, retrieves embeddings, annotates with an LLM,
+  validates on a train/test split, refits on all comparisons, and returns
+  document scores. The `prompt` argument accepts plain instruction text —
+  the `A: {{text_a}} / B: {{text_b}}` formatting is handled automatically.
+  Returns a `textscale_result` object with scores, both fitted models,
+  validation metrics, comparisons, and the embedding matrix.
+
 * `fit_model()` gains a `refit` argument. When `refit = TRUE`, the `split`
   column is ignored and all comparisons are used for fitting. The recommended
   workflow is to call `fit_model()` (training split only) and

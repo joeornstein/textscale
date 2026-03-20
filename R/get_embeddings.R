@@ -1,3 +1,9 @@
+#' @keywords internal
+#' @export
+.fetch_embeddings <- function(documents, ...) {
+  fuzzylink::get_embeddings(documents, ...)
+}
+
 #' Get text embeddings with optional caching
 #'
 #' A thin wrapper around [fuzzylink::get_embeddings()] that adds
@@ -18,11 +24,6 @@
 #'   per embedding dimension. Row names are set to `documents`.
 #'
 #' @export
-# Internal wrapper around fuzzylink::get_embeddings to allow mocking in tests.
-.fetch_embeddings <- function(documents, ...) {
-  fuzzylink::get_embeddings(documents, ...)
-}
-
 get_embeddings <- function(documents, cache = NULL, ...) {
   cached <- NULL
   if (!is.null(cache) && file.exists(cache)) {

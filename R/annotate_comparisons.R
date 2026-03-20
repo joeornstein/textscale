@@ -1,3 +1,52 @@
+#' @keywords internal
+#' @export
+.chat_openai <- function(...) ellmer::chat_openai(...)
+
+#' @keywords internal
+#' @export
+.batch_chat_text <- function(...) ellmer::batch_chat_text(...)
+
+#' @keywords internal
+#' @export
+.parallel_chat_text <- function(...) ellmer::parallel_chat_text(...)
+
+# Published OpenAI prices in USD per million tokens (standard rate).
+# Batch API is 50% cheaper. Update as prices change.
+.model_prices <- list(
+  "gpt-5.4"      = c(input = 2.50, output = 15.00),
+  "gpt-5.2"      = c(input = 1.75, output = 14.00),
+  "gpt-5"        = c(input = 1.25, output = 10.00),
+  "gpt-5-mini"   = c(input = 0.25, output =  2.00),
+  "gpt-5-nano"   = c(input = 0.05, output =  0.40),
+  "gpt-4.1"      = c(input = 2.00, output =  8.00),
+  "gpt-4.1-mini" = c(input = 0.40, output =  1.60),
+  "gpt-4.1-nano" = c(input = 0.10, output =  0.40),
+  "gpt-4o"       = c(input = 2.50, output = 10.00),
+  "gpt-4o-mini"  = c(input = 0.15, output =  0.60)
+)
+
+# Build a cost-estimate message for a set of interpolated prompts.
+# Returns NULL silently when the model is not in the pricing table.
+.cost_estimate_message <- function(prompts, system_prompt, model, batch = FALSE) {
+  if (!model %in% names(.model_prices)) return(NULL)
+
+  p <- .model_prices[[model]]
+  if (batch) p <- p * 0.5
+
+  # Approximate token counts: ~4 characters per token.
+  n             <- length(prompts)
+  input_tokens  <- (sum(nchar(unlist(prompts))) + n * nchar(system_prompt)) / 4
+  output_tokens <- n  # single-letter response
+
+  cost <- (input_tokens / 1e6) * p["input"] + (output_tokens / 1e6) * p["output"]
+
+  mode_note <- if (batch) " (batch pricing, 50% discount applied)" else ""
+  sprintf(
+    "Estimated API cost: ~$%.4g for %s new comparison(s) using %s%s. Prices are approximate; see https://openai.com/api/pricing/ for current rates.",
+    cost, format(n, big.mark = ","), model, mode_note
+  )
+}
+
 #' Annotate pairwise comparisons using an LLM
 #'
 #' Submits each comparison pair to an LLM and records which document
@@ -44,48 +93,6 @@
 #'   column containing `"A"` or `"B"` for each pair.
 #'
 #' @export
-# Internal wrappers around ellmer calls to allow mocking in tests.
-.chat_openai <- function(...) ellmer::chat_openai(...)
-.batch_chat_text <- function(...) ellmer::batch_chat_text(...)
-.parallel_chat_text <- function(...) ellmer::parallel_chat_text(...)
-
-# Published OpenAI prices in USD per million tokens (standard rate).
-# Batch API is 50% cheaper. Update as prices change.
-.model_prices <- list(
-  "gpt-5.4"      = c(input = 2.50, output = 15.00),
-  "gpt-5.2"      = c(input = 1.75, output = 14.00),
-  "gpt-5"        = c(input = 1.25, output = 10.00),
-  "gpt-5-mini"   = c(input = 0.25, output =  2.00),
-  "gpt-5-nano"   = c(input = 0.05, output =  0.40),
-  "gpt-4.1"      = c(input = 2.00, output =  8.00),
-  "gpt-4.1-mini" = c(input = 0.40, output =  1.60),
-  "gpt-4.1-nano" = c(input = 0.10, output =  0.40),
-  "gpt-4o"       = c(input = 2.50, output = 10.00),
-  "gpt-4o-mini"  = c(input = 0.15, output =  0.60)
-)
-
-# Build a cost-estimate message for a set of interpolated prompts.
-# Returns NULL silently when the model is not in the pricing table.
-.cost_estimate_message <- function(prompts, system_prompt, model, batch = FALSE) {
-  if (!model %in% names(.model_prices)) return(NULL)
-
-  p <- .model_prices[[model]]
-  if (batch) p <- p * 0.5
-
-  # Approximate token counts: ~4 characters per token.
-  n             <- length(prompts)
-  input_tokens  <- (sum(nchar(unlist(prompts))) + n * nchar(system_prompt)) / 4
-  output_tokens <- n  # single-letter response
-
-  cost <- (input_tokens / 1e6) * p["input"] + (output_tokens / 1e6) * p["output"]
-
-  mode_note <- if (batch) " (batch pricing, 50% discount applied)" else ""
-  sprintf(
-    "Estimated API cost: ~$%.4g for %s new comparison(s) using %s%s. Prices are approximate; see https://openai.com/api/pricing/ for current rates.",
-    cost, format(n, big.mark = ","), model, mode_note
-  )
-}
-
 annotate_comparisons <- function(
     comparisons,
     prompt,

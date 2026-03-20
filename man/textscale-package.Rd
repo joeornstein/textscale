@@ -2,7 +2,6 @@
 % Please edit documentation in R/textscale-package.R
 \docType{package}
 \name{textscale-package}
-\alias{textscale}
 \alias{textscale-package}
 \title{textscale: Measure Latent Quantities from Text Using Pairwise Comparisons}
 \description{
