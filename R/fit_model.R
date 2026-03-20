@@ -68,6 +68,10 @@ fit_model <- function(
     comparisons <- comparisons[comparisons$split == "train", ]
   }
 
+  n_pairs  <- nrow(comparisons)
+  n_dims   <- ncol(embeddings)
+  pair_lbl <- format(n_pairs, big.mark = ",")
+
   emb_diff <- embeddings[comparisons$doc_id_a, ] -
     embeddings[comparisons$doc_id_b, ]
   y <- as.numeric(comparisons$winner == "A")
@@ -75,6 +79,7 @@ fit_model <- function(
   if (method %in% c("ridge", "lasso", "enet")) {
     alpha_val <- switch(method, ridge = 0, lasso = 1, enet = alpha)
 
+    message(glue::glue("Running 10-fold CV ({pair_lbl} pairs, {nlambda} lambda values)..."))
     cv_fit <- glmnet::cv.glmnet(
       x = emb_diff,
       y = y,
@@ -92,6 +97,7 @@ fit_model <- function(
       )
     }
 
+    message(glue::glue("Optimal lambda: {signif(cv_fit$lambda.min, 3)}. Refitting..."))
     final_fit <- glmnet::glmnet(
       x = emb_diff,
       y = y,
@@ -102,11 +108,13 @@ fit_model <- function(
 
     # Laplace posterior covariance: (X'WX + lambda*I)^{-1}
     # Used by score_documents() to compute per-document score CIs.
+    message(glue::glue("Computing posterior covariance ({n_dims}x{n_dims})..."))
     probs      <- as.numeric(predict(final_fit, newx = emb_diff, type = "response"))
     w          <- probs * (1 - probs)
     XtWX       <- crossprod(sqrt(w) * emb_diff)
     sigma_post <- solve(XtWX + cv_fit$lambda.min * diag(ncol(emb_diff)))
 
+    message("Done.")
     structure(
       list(
         beta       = as.numeric(coef(final_fit))[-1],
@@ -119,6 +127,7 @@ fit_model <- function(
       class = "textscale_model"
     )
   } else {
+    message(glue::glue("Fitting linear SVM on {pair_lbl} pairs..."))
     svm_fit <- e1071::svm(
       x = emb_diff,
       y = factor(y),
@@ -126,6 +135,7 @@ fit_model <- function(
       scale = FALSE,
       ...
     )
+    message("Done.")
 
     structure(
       list(
