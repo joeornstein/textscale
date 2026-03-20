@@ -30,6 +30,10 @@
 #'   evaluated. Defaults to `1e-9`. Increase if you see a warning that
 #'   the optimal lambda is at the boundary of the search range. Ignored
 #'   when `method = "svm"`.
+#' @param refit Logical. If `TRUE`, all comparisons are used for fitting
+#'   regardless of any `split` column. Use this after validating on a
+#'   train/test split to produce a final model trained on the full set of
+#'   annotations before scoring documents. Defaults to `FALSE`.
 #' @param ... Additional arguments passed to [glmnet::cv.glmnet()]
 #'   (for glmnet methods) or [e1071::svm()] (for `method = "svm"`).
 #'
@@ -56,10 +60,11 @@ fit_model <- function(
     alpha = 0.5,
     nlambda = 200,
     lambda_min_ratio = 1e-9,
+    refit = FALSE,
     ...) {
   method <- match.arg(method)
 
-  if ("split" %in% names(comparisons)) {
+  if ("split" %in% names(comparisons) && !refit) {
     comparisons <- comparisons[comparisons$split == "train", ]
   }
 

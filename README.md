@@ -24,22 +24,22 @@ require an OpenAI API key set as `OPENAI_API_KEY` in your environment.
 
 ## Usage
 
-The package follows a five-step pipeline:
+The package follows a seven-step pipeline:
 
-| Step | Function | Input | Output |
-|------|----------|-------|--------|
-| 1 | `generate_comparisons()` | documents | comparison pairs |
-| 2 | `get_embeddings()` | documents | embedding matrix |
-| 3 | `annotate_comparisons()` | comparison pairs + LLM prompt | pairs with winners |
-| 4 | `fit_model()` | pairs with winners + embedding matrix | `textscale_model` |
-| 5 | `score_documents()` | `textscale_model` + embedding matrix | latent dimension scores |
-
+| Step | Function | Purpose |
+|------|----------|---------|
+| 1 | `generate_comparisons()` | Create train/test comparison pairs |
+| 2 | `get_embeddings()` | Retrieve text embeddings |
+| 3 | `annotate_comparisons()` | Annotate pairs with an LLM |
+| 4 | `fit_model()` | Fit model on training pairs |
+| 5 | `validate_model()` | Evaluate accuracy on held-out test pairs |
+| 6 | `fit_model(refit = TRUE)` | Refit model on all comparisons |
+| 7 | `score_documents()` | Score all documents on the latent dimension |
 
 ```r
 library(textscale)
 
-# 1. Generate pairwise comparisons from your documents,
-#    holding out 20% for validation.
+# 1. Generate pairwise comparisons, holding out 20% for validation.
 comparisons <- generate_comparisons(docs, prop = 0.8, seed = 42)
 
 # 2. Get text embeddings (cached to disk for reuse).
@@ -55,24 +55,17 @@ B: {{text_b}}",
   cache = "annotations.rds"
 )
 
-# 4. Fit the model on the training split.
+# 4. Fit the model on the training split and validate on the test split.
 model <- fit_model(comparisons, embeddings)
-
-# 5. Score all documents on the latent dimension.
-scores <- score_documents(model, embeddings)
-```
-
-### Validation
-
-`validate_model()` evaluates predictive accuracy on the held-out test
-split and prints a calibration plot:
-
-```r
 validate_model(model, comparisons, embeddings)
-#> # A tibble: 1 × 3
-#>   n_pairs n_correct accuracy
-#>     <int>     <int>    <dbl>
-#> 1    5000      4251    0.850
+#> # A tibble: 1 × 4
+#>   n_pairs n_correct accuracy   ici
+#>     <int>     <int>    <dbl> <dbl>
+#> 1    5000      4251    0.850 0.042
+
+# 5. Refit on all comparisons, then score all documents.
+model_final <- fit_model(comparisons, embeddings, refit = TRUE)
+scores <- score_documents(model_final, embeddings)
 ```
 
 ## How it works

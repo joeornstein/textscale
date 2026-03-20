@@ -11,6 +11,7 @@ fit_model(
   alpha = 0.5,
   nlambda = 200,
   lambda_min_ratio = 1e-09,
+  refit = FALSE,
   ...
 )
 }
@@ -44,6 +45,11 @@ cross-validation. Defaults to \code{200}. Ignored when
 evaluated. Defaults to \code{1e-9}. Increase if you see a warning that
 the optimal lambda is at the boundary of the search range. Ignored
 when \code{method = "svm"}.}
+
+\item{refit}{Logical. If \code{TRUE}, all comparisons are used for fitting
+regardless of any \code{split} column. Use this after validating on a
+train/test split to produce a final model trained on the full set of
+annotations before scoring documents. Defaults to \code{FALSE}.}
 
 \item{...}{Additional arguments passed to \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}}
 (for glmnet methods) or \code{\link[e1071:svm]{e1071::svm()}} (for \code{method = "svm"}).}
