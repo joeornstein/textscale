@@ -102,13 +102,19 @@ annotate_comparisons <- function(
     cache = NULL,
     ...) {
 
+  hash <- .prompt_hash(prompt, system_prompt)
+
   # Start with all winners unknown
   comparisons$winner <- NA_character_
 
-  # Recover cached winners by matching on text content
+  # Recover cached winners, but only if the cache was created with the
+  # same prompt and system_prompt (checked via stored MD5 hash attribute).
   if (!is.null(cache) && file.exists(cache)) {
     cached <- readRDS(cache)
-    if ("winner" %in% names(cached)) {
+    if (!identical(attr(cached, "prompt_hash"), hash)) {
+      message("Prompt has changed; ignoring cached annotations.")
+      cached <- NULL
+    } else if ("winner" %in% names(cached)) {
       key_new    <- paste(comparisons$text_a, comparisons$text_b, sep = "\t")
       key_cached <- paste(cached$text_a,      cached$text_b,      sep = "\t")
       idx <- match(key_new, key_cached)
@@ -125,6 +131,7 @@ annotate_comparisons <- function(
 
   if (n_new == 0) {
     if (!is.null(cache)) {
+      attr(comparisons, "prompt_hash") <- hash
       .ensure_dir(cache)
       saveRDS(comparisons, cache)
     }
@@ -151,6 +158,7 @@ annotate_comparisons <- function(
   comparisons$winner[needs_annotation] <- trimws(responses)
 
   if (!is.null(cache)) {
+    attr(comparisons, "prompt_hash") <- hash
     .ensure_dir(cache)
     saveRDS(comparisons, cache)
   }
