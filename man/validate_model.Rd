@@ -2,9 +2,12 @@
 % Please edit documentation in R/validate_model.R
 \name{validate_model}
 \alias{validate_model}
+\alias{plot.textscale_validation}
 \title{Validate a textscale model on held-out comparisons}
 \usage{
-validate_model(model, comparisons, embeddings, plot = TRUE)
+validate_model(model, comparisons, embeddings)
+
+\method{plot}{textscale_validation}(x, bins = 10, ...)
 }
 \arguments{
 \item{model}{A \code{textscale_model} object produced by
@@ -18,12 +21,19 @@ present, only test-set rows are used.}
 must correspond to document \code{i} in the original \code{documents} vector
 passed to \code{\link[=generate_comparisons]{generate_comparisons()}}.}
 
-\item{plot}{Logical. If \code{TRUE} (the default), a calibration plot is
-printed.}
+\item{x}{A \code{textscale_validation} object.}
+
+\item{bins}{Number of equal-width bins for the reliability diagram
+points. Default is 10.}
+
+\item{...}{Ignored.}
 }
 \value{
-A tibble with columns \code{n_pairs}, \code{n_correct}, \code{accuracy},
-and \code{ici} (Integrated Calibration Index).
+A \code{textscale_validation} object. Call \code{\link[=print]{print()}} to display
+the accuracy and ICI metrics; call \code{\link[=plot]{plot()}} to display a calibration
+plot and retrieve the underlying \code{ggplot} object.
+
+\code{plot()} returns the \code{ggplot} calibration plot invisibly.
 }
 \description{
 Evaluates how well a fitted textscale model predicts the outcome of
@@ -32,10 +42,6 @@ higher latent score is predicted to win; this is compared against the
 observed \code{winner} label.
 }
 \details{
-A calibration plot of predicted P(A wins) against the observed
-proportion of A wins is printed by default. Perfect calibration
-corresponds to the 45° reference line.
-
 The \strong{Integrated Calibration Index (ICI)} is the mean absolute
 deviation of the calibration smooth from the diagonal, evaluated over
 a fine grid. It expresses the average miscalibration in probability

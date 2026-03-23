@@ -1,13 +1,11 @@
+utils::globalVariables(c("prob", "result", "mean_pred", "obs_prop", "n"))
+
 #' Validate a textscale model on held-out comparisons
 #'
 #' Evaluates how well a fitted textscale model predicts the outcome of
 #' held-out pairwise comparisons. For each pair, the document with the
 #' higher latent score is predicted to win; this is compared against the
 #' observed `winner` label.
-#'
-#' A calibration plot of predicted P(A wins) against the observed
-#' proportion of A wins is printed by default. Perfect calibration
-#' corresponds to the 45° reference line.
 #'
 #' The **Integrated Calibration Index (ICI)** is the mean absolute
 #' deviation of the calibration smooth from the diagonal, evaluated over
@@ -32,14 +30,13 @@
 #' @param embeddings A numeric matrix of document embeddings. Row `i`
 #'   must correspond to document `i` in the original `documents` vector
 #'   passed to [textscale::generate_comparisons()].
-#' @param plot Logical. If `TRUE` (the default), a calibration plot is
-#'   printed.
 #'
-#' @return A tibble with columns `n_pairs`, `n_correct`, `accuracy`,
-#'   and `ici` (Integrated Calibration Index).
+#' @return A `textscale_validation` object. Call [print()] to display
+#'   the accuracy and ICI metrics; call [plot()] to display a calibration
+#'   plot and retrieve the underlying `ggplot` object.
 #'
 #' @export
-validate_model <- function(model, comparisons, embeddings, plot = TRUE) {
+validate_model <- function(model, comparisons, embeddings) {
   if ("split" %in% names(comparisons)) {
     comparisons <- comparisons[comparisons$split == "test", ]
   }
@@ -59,26 +56,88 @@ validate_model <- function(model, comparisons, embeddings, plot = TRUE) {
   fitted  <- as.numeric(predict(gam_fit, newdata = data.frame(prob = grid)))
   ici     <- mean(abs(fitted - grid))
 
-  result <- tibble::tibble(
+  metrics <- tibble::tibble(
     n_pairs   = nrow(comparisons),
     n_correct = n_correct,
     accuracy  = n_correct / nrow(comparisons),
     ici       = ici
   )
 
-  if (plot) {
-    p <- ggplot2::ggplot(cal_df, ggplot2::aes(x = prob, y = result)) +
-      ggplot2::geom_smooth() +
-      ggplot2::geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
-      ggplot2::scale_x_continuous(labels = scales::percent_format()) +
-      ggplot2::scale_y_continuous(labels = scales::percent_format()) +
-      ggplot2::labs(
-        x        = "Predicted P(A wins)",
-        y        = "Observed proportion (A wins)",
-        subtitle = paste0("ICI = ", round(ici, 3))
-      )
-    print(p)
-  }
+  structure(
+    list(metrics = metrics, cal_df = cal_df, ici = ici),
+    class = "textscale_validation"
+  )
+}
 
-  result
+#' @export
+print.textscale_validation <- function(x, ...) {
+  cat("textscale model validation\n\n")
+  print(x$metrics)
+  invisible(x)
+}
+
+#' @rdname validate_model
+#' @param x A `textscale_validation` object.
+#' @param bins Number of equal-width bins for the reliability diagram
+#'   points. Default is 10.
+#' @param ... Ignored.
+#'
+#' @return `plot()` returns the `ggplot` calibration plot invisibly.
+#'
+#' @export
+plot.textscale_validation <- function(x, bins = 10, ...) {
+  cal_df <- x$cal_df
+  ici    <- x$ici
+
+  # Bin observed proportions for reliability diagram points
+  breaks <- seq(0, 1, length.out = bins + 1)
+  cuts   <- cut(cal_df$prob, breaks = breaks, include.lowest = TRUE)
+  bin_df <- data.frame(
+    mean_pred = tapply(cal_df$prob,   cuts, mean,   na.rm = TRUE),
+    obs_prop  = tapply(cal_df$result, cuts, mean,   na.rm = TRUE),
+    n         = tapply(cal_df$result, cuts, length)
+  )
+  bin_df <- bin_df[!is.na(bin_df$obs_prop), ]
+
+  p <- ggplot2::ggplot(cal_df, ggplot2::aes(x = prob, y = result)) +
+    ggplot2::geom_abline(
+      intercept = 0, slope = 1,
+      linetype = "dashed", color = "grey50", linewidth = 0.5
+    ) +
+    ggplot2::annotate(
+      "text", x = 0.88, y = 0.83,
+      label = "Ideal", color = "grey50", size = 3
+    ) +
+    ggplot2::geom_smooth(
+      method    = "gam",
+      formula   = y ~ s(x, bs = "cs"),
+      color     = "#2166AC",
+      fill      = "#2166AC",
+      alpha     = 0.15,
+      linewidth = 0.9
+    ) +
+    ggplot2::geom_point(
+      data  = bin_df,
+      ggplot2::aes(x = mean_pred, y = obs_prop, size = n),
+      shape = 21, fill = "white", color = "#2166AC", stroke = 0.9
+    ) +
+    ggplot2::scale_x_continuous(
+      labels = scales::percent_format(),
+      limits = c(0, 1), expand = ggplot2::expansion(add = 0.01)
+    ) +
+    ggplot2::scale_y_continuous(
+      labels = scales::percent_format(),
+      limits = c(0, 1), expand = ggplot2::expansion(add = 0.01)
+    ) +
+    ggplot2::scale_size_continuous(range = c(2, 8), name = "Pairs") +
+    ggplot2::labs(
+      title   = "Calibration plot",
+      x       = "Predicted P(A wins)",
+      y       = "Observed P(A wins)",
+      caption = paste0("ICI = ", round(ici, 3))
+    ) +
+    ggplot2::theme_minimal()
+
+  print(p)
+  invisible(p)
 }

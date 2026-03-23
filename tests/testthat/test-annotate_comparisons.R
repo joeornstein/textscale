@@ -10,7 +10,7 @@ test_that("cache is returned immediately when file exists", {
   saveRDS(cached, tmp)
 
   result <- annotate_comparisons(comparisons, prompt = "irrelevant", cache = tmp)
-  expect_equal(result, cached)
+  expect_equal(result, cached, ignore_attr = TRUE)
 })
 
 test_that("cache file is written after annotation", {

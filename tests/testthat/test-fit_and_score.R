@@ -47,11 +47,12 @@ test_that("scores correlate strongly with the true latent dimension", {
   expect_gt(abs(cor(scores, true_scores)), 0.95)
 })
 
-test_that("validate_model returns expected columns and sane accuracy", {
+test_that("validate_model returns a textscale_validation object", {
   result <- validate_model(model, comparisons, emb)
-  expect_named(result, c("n_pairs", "n_correct", "accuracy", "ici"))
-  expect_equal(result$n_pairs, nrow(comparisons))
-  expect_gte(result$accuracy, 0.5)
+  expect_s3_class(result, "textscale_validation")
+  expect_named(result$metrics, c("n_pairs", "n_correct", "accuracy", "ici"))
+  expect_equal(result$metrics$n_pairs, nrow(comparisons))
+  expect_gte(result$metrics$accuracy, 0.5)
 })
 
 # --- SVM ----------------------------------------------------------------------
@@ -76,8 +77,9 @@ test_that("svm scores correlate strongly with the true latent dimension", {
 
 test_that("validate_model works with svm model", {
   result <- validate_model(model_svm, comparisons, emb)
-  expect_named(result, c("n_pairs", "n_correct", "accuracy", "ici"))
-  expect_gte(result$accuracy, 0.5)
+  expect_s3_class(result, "textscale_validation")
+  expect_named(result$metrics, c("n_pairs", "n_correct", "accuracy", "ici"))
+  expect_gte(result$metrics$accuracy, 0.5)
 })
 
 # --- Confidence intervals (Laplace) ------------------------------------------

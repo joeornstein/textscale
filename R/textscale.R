@@ -56,8 +56,10 @@
 #'       new documents.}
 #'     \item{`model_eval`}{The `textscale_model` fit on training
 #'       comparisons only, used for validation.}
-#'     \item{`metrics`}{Validation metrics from [validate_model()], or
-#'       `NULL` if `validate = FALSE`.}
+#'     \item{`validation`}{A `textscale_validation` object from
+#'       [validate_model()], or `NULL` if `validate = FALSE`. Call
+#'       [print()] on it for metrics and [plot()] for the calibration
+#'       plot.}
 #'     \item{`comparisons`}{The annotated comparisons tibble.}
 #'     \item{`embeddings`}{The document embedding matrix.}
 #'   }
@@ -138,7 +140,7 @@ textscale <- function(
       scores      = scores,
       model_final = model_final,
       model_eval  = model_eval,
-      metrics     = metrics,
+      validation  = metrics,
       comparisons = comparisons,
       embeddings  = embeddings
     ),
@@ -147,16 +149,25 @@ textscale <- function(
 }
 
 #' @export
+plot.textscale_result <- function(x, ...) {
+  if (is.null(x$validation)) {
+    stop("No validation object found. Re-run textscale() with validate = TRUE.")
+  }
+  plot(x$validation, ...)
+}
+
+#' @export
 print.textscale_result <- function(x, ...) {
   n <- if (is.data.frame(x$scores)) nrow(x$scores) else length(x$scores)
   cat("textscale result\n")
   cat(sprintf("  Documents scored:  %s\n", format(n, big.mark = ",")))
-  if (!is.null(x$metrics)) {
+  if (!is.null(x$validation)) {
+    m <- x$validation$metrics
     cat(sprintf(
       "  Validation:        %.1f%% accuracy on %s test pairs (ICI = %.3f)\n",
-      100 * x$metrics$accuracy,
-      format(x$metrics$n_pairs, big.mark = ","),
-      x$metrics$ici
+      100 * m$accuracy,
+      format(m$n_pairs, big.mark = ","),
+      m$ici
     ))
   }
   invisible(x)

@@ -88,8 +88,10 @@ used to produce \code{scores}. Pass to \code{\link[=score_documents]{score_docum
 new documents.}
 \item{\code{model_eval}}{The \code{textscale_model} fit on training
 comparisons only, used for validation.}
-\item{\code{metrics}}{Validation metrics from \code{\link[=validate_model]{validate_model()}}, or
-\code{NULL} if \code{validate = FALSE}.}
+\item{\code{validation}}{A \code{textscale_validation} object from
+\code{\link[=validate_model]{validate_model()}}, or \code{NULL} if \code{validate = FALSE}. Call
+\code{\link[=print]{print()}} on it for metrics and \code{\link[=plot]{plot()}} for the calibration
+plot.}
 \item{\code{comparisons}}{The annotated comparisons tibble.}
 \item{\code{embeddings}}{The document embedding matrix.}
 }
