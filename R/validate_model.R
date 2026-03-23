@@ -104,10 +104,7 @@ plot.textscale_validation <- function(x, bins = 10, ...) {
       intercept = 0, slope = 1,
       linetype = "dashed", color = "grey50", linewidth = 0.5
     ) +
-    ggplot2::annotate(
-      "text", x = 0.88, y = 0.83,
-      label = "Ideal", color = "grey50", size = 3
-    ) +
+
     ggplot2::geom_smooth(
       method    = "gam",
       formula   = y ~ s(x, bs = "cs"),
