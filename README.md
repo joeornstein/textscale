@@ -1,4 +1,4 @@
-# textscale
+# textscale <img src="man/figures/logo.png" align="right" height="138" />
 
 <!-- badges: start -->
 <!-- badges: end -->
