@@ -15,7 +15,7 @@ uses it to score any document — including ones never directly compared.
 
 ```r
 # install.packages("pak")
-pak::pak("jornstein/textscale")
+pak::pak("joeornstein/textscale")
 ```
 
 textscale uses [ellmer](https://ellmer.tidyverse.org/) for LLM calls and
