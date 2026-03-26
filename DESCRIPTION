@@ -26,6 +26,12 @@ Imports:
     mgcv,
     scales,
     tibble
-Suggests: 
+Suggests:
+    knitr,
+    rmarkdown,
+    dplyr,
+    ggplot2,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+VignetteBuilder: knitr
+LazyData: true
