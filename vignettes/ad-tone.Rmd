@@ -17,15 +17,11 @@ library(ggplot2)
 library(dplyr)
 ```
 
-Political scientists often need to measure latent features of text —
-things like negativity, ideological tone, or argument strength — that resist
-simple keyword counting. Carlson & Montgomery (2017) developed a pairwise
-comparison approach for this problem: instead of rating each document in
-isolation, annotators are shown pairs of documents and asked "Which one is
-more negative?" Aggregating these judgments with a Bradley-Terry model
-yields a continuous score for every document.
+Political scientists often need to measure latent quantities from text —
+concepts like negativity, ideology, argument strength, etc. Carlson & Montgomery (2017) developed a pairwise
+comparison approach to this problem which they call `SentimentIt`: instead of rating each document in isolation, annotators are shown pairs of documents and asked "Which one is more negative?" Aggregating these judgments with a scaling model yields a continuous score for every document.
 
-textscale extends this approach by combining pairwise annotations with text
+The `textscale` package extends this approach by combining pairwise annotations with text
 embeddings. Rather than requiring comparisons between every pair of documents,
 textscale fits a ridge logistic regression on embedding differences to
 identify a *direction* in embedding space that separates winners from losers.
@@ -34,9 +30,9 @@ embedding onto it — including documents that were never directly compared.
 
 ## Data
 
-Carlson & Montgomery published the pairwise annotations from their Wisconsin
+Carlson & Montgomery (2017) published the pairwise annotations from their Wisconsin
 congressional ads study alongside their paper. The `ad_tone` dataset bundled
-with textscale contains 935 ads from that study, together with textscale
+with textscale contains 935 ads from that study, together with `textscale`
 scores derived from those annotations.
 
 ```{r data-overview}
@@ -44,10 +40,9 @@ data(ad_tone)
 glimpse(ad_tone)
 ```
 
-## Scaling with textscale
+## Scaling with `textscale`
 
-To replicate this analysis from scratch — or to apply it to your own
-documents — you would run `textscale()` with a single prompt:
+To replicate this analysis from scratch — or to apply it to your own documents — you would run `textscale()` with a single prompt:
 
 ```{r textscale-call, eval = FALSE}
 result <- textscale(
@@ -62,6 +57,28 @@ embeddings, submitting annotations to an LLM via the OpenAI Batch API,
 fitting and validating the model, and returning scores for all documents.
 An OpenAI API key stored in the `OPENAI_API_KEY` environment variable is
 required.
+
+## Replicating with the crowd-sourced annotations
+
+The `cm_comparisons` dataset contains the original crowd-coded pairwise comparisons
+from Carlson & Montgomery (2017). You can use these to estimate `textscale` scores directly without any calls to the LLM.
+
+```{r textscale-cached, eval = FALSE}
+# 1. Get embeddings for each ad
+emb <- get_embeddings(ad_tone$text)
+
+# 2. Fit model on cm_comparisons (train set only by default)
+mod <- fit_model(cm_comparisons, emb)
+
+# 3. Check model calibration against held-out ads
+validate_model(mod, cm_comparisons, emb)
+
+# 4. Fit final model on all pairwise comparisons
+mod <- fit_model(cm_comparisons, emb, refit = TRUE)
+
+# 5. Project scores
+scores <- score_documents(mod, emb, ci = TRUE)
+```
 
 ## Validation
 
@@ -83,9 +100,8 @@ plot(ad_tone_validation)
 
 ## Scores by tone category
 
-Carlson & Montgomery assigned each ad a five-point tone code ranging from
-purely promotional to purely attacking. The textscale scores align well with
-these categories, with the score distributions shifting upward as the ads
+The Wisconsin Advertising Project (WiscAds) assigned each ad a five-point tone code
+ranging from purely promotional to purely attacking. The `textscale` scores align well with these categories, with the score distributions shifting upward as the ads
 become more negative.
 
 ```{r tone-plot, fig.width = 6.5, fig.height = 4}
@@ -101,13 +117,13 @@ ad_tone |>
   theme_bw()
 ```
 
-## Correlation with Carlson-Montgomery scores
+## Correlation with SentimentIt scores
 
-Because the human annotations used to fit the textscale model are the same
-ones Carlson & Montgomery used for their Bradley-Terry model, the two sets of
-scores are highly correlated — but they need not be identical, since textscale
+Because the human annotations used to fit the `textscale` model are the same
+ones Carlson & Montgomery (2017) used for their SentimentIt model, the two sets of
+scores are highly correlated — but they need not be identical, since `textscale`
 uses the annotations to learn a direction in embedding space rather than
-fitting a Bradley-Terry model directly.
+fitting a SentimentIt model directly.
 
 ```{r correlation}
 cor(ad_tone$score, ad_tone$alphas, use = "pairwise.complete.obs") |>
@@ -121,7 +137,7 @@ ad_tone |>
   geom_point(alpha = 0.7, size = 1.5) +
   labs(
     x     = "textscale Score",
-    y     = "Carlson-Montgomery Score",
+    y     = "SentimentIt Score",
     color = NULL
   ) +
   theme_bw() +
@@ -130,7 +146,7 @@ ad_tone |>
 
 ## Scoring new documents
 
-Once a model is fit, scoring new documents requires only their embeddings —
+Once the model is fit, scoring new documents requires only their embeddings —
 no additional pairwise annotations. Here are three hypothetical ads placed on
 the negativity scale:
 
@@ -168,5 +184,5 @@ the tone categories would predict.
 ## References
 
 Carlson, T. N., & Montgomery, J. M. (2017). A pairwise comparison framework
-for fast, flexible, and reliable human coding of political texts. *Political
-Analysis*, 25(1), 97–110. https://doi.org/10.1017/pan.2016.2
+for fast, flexible, and reliable human coding of political texts. *American
+Political Science Review*, 111(4), 835–843. https://doi.org/10.1017/S0003055417000302

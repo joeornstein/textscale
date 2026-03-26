@@ -3,7 +3,8 @@
 # Requires the document-scaling project results file.
 # Source: Carlson, T. N., & Montgomery, J. M. (2017). A pairwise comparison
 # framework for fast, flexible, and reliable human coding of political texts.
-# Political Analysis, 25(1), 97–110.
+# American Political Science Review, 111(4), 835–843.
+# https://doi.org/10.1017/S0003055417000302
 
 library(dplyr)
 

@@ -94,7 +94,10 @@
 #'   reuse the stored `winner`; only rows without a cache hit are sent
 #'   to the LLM. The updated result (cached + new) is written back to
 #'   `cache` after annotation. If `cache` is `NULL` all rows are
-#'   annotated and nothing is written to disk.
+#'   annotated and nothing is written to disk. Caches written by
+#'   textscale carry a prompt hash and will be ignored if the prompt
+#'   changes; externally supplied caches (no hash attribute) bypass
+#'   this check.
 #' @param ... Additional arguments passed to
 #'   [ellmer::batch_chat_text()] or [ellmer::parallel_chat_text()].
 #'
@@ -120,8 +123,9 @@ annotate_comparisons <- function(
   # Recover cached winners, but only if the cache was created with the
   # same prompt and system_prompt (checked via stored MD5 hash attribute).
   if (!is.null(cache) && file.exists(cache)) {
-    cached <- readRDS(cache)
-    if (!identical(attr(cached, "prompt_hash"), hash)) {
+    cached      <- readRDS(cache)
+    cached_hash <- attr(cached, "prompt_hash")
+    if (!is.null(cached_hash) && !identical(cached_hash, hash)) {
       message("Prompt has changed; ignoring cached annotations.")
       cached <- NULL
     } else if ("winner" %in% names(cached)) {

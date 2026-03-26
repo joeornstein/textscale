@@ -21,9 +21,10 @@ ad_tone_validation
 \description{
 A \code{textscale_validation} object produced by \code{\link[=validate_model]{validate_model()}} for the
 ad-tone example. Contains test-set accuracy and calibration metrics for
-the model fit to the Carlson & Montgomery (2017) Wisconsin ads.
+the textscale model fit to the Carlson & Montgomery (2017) Wisconsin ads
+using the human pairwise annotations in \link{cm_comparisons}.
 }
 \seealso{
-\code{\link[=validate_model]{validate_model()}}, \link{ad_tone}
+\code{\link[=validate_model]{validate_model()}}, \link{ad_tone}, \link{cm_comparisons}
 }
 \keyword{datasets}

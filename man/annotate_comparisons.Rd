@@ -46,7 +46,10 @@ cached annotations are matched to the incoming \code{comparisons} by
 reuse the stored \code{winner}; only rows without a cache hit are sent
 to the LLM. The updated result (cached + new) is written back to
 \code{cache} after annotation. If \code{cache} is \code{NULL} all rows are
-annotated and nothing is written to disk.}
+annotated and nothing is written to disk. Caches written by
+textscale carry a prompt hash and will be ignored if the prompt
+changes; externally supplied caches (no hash attribute) bypass
+this check.}
 
 \item{...}{Additional arguments passed to
 \code{\link[ellmer:batch_chat]{ellmer::batch_chat_text()}} or \code{\link[ellmer:parallel_chat]{ellmer::parallel_chat_text()}}.}

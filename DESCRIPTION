@@ -35,3 +35,5 @@ Suggests:
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 LazyData: true
+Depends: 
+    R (>= 3.5)
