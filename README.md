@@ -36,49 +36,40 @@ To verify it's set: `Sys.getenv("OPENAI_API_KEY")`.
 
 ## Usage
 
-The package follows a seven-step pipeline:
-
-| Step | Function | Purpose |
-|------|----------|---------|
-| 1 | `generate_comparisons()` | Create train/test comparison pairs |
-| 2 | `get_embeddings()` | Retrieve text embeddings |
-| 3 | `annotate_comparisons()` | Annotate pairs with an LLM |
-| 4 | `fit_model()` | Fit model on training pairs |
-| 5 | `validate_model()` | Evaluate accuracy on held-out test pairs |
-| 6 | `fit_model(refit = TRUE)` | Refit model on all comparisons |
-| 7 | `score_documents()` | Score all documents on the latent dimension |
-
 ```r
 library(textscale)
 
-# 1. Generate pairwise comparisons, holding out 20% for validation.
-comparisons <- generate_comparisons(docs, prop = 0.8, seed = 42)
-
-# 2. Get text embeddings (cached to disk for reuse).
-embeddings <- get_embeddings(docs, cache = "embeddings.rds")
-
-# 3. Have an LLM annotate each comparison.
-#    Results are cached so interrupted runs can be resumed.
-comparisons <- annotate_comparisons(
-  comparisons,
-  prompt = "Which political ad is more negative toward its opponent?
-A: {{text_a}}
-B: {{text_b}}",
-  cache = "annotations.rds"
+result <- textscale(
+  documents = docs,
+  prompt    = "Which political ad is more negative toward its opponent?",
+  seed      = 42
 )
+#> textscale result
+#>   Documents scored:  500
+#>   Validation:        85.0% accuracy on 5,000 test pairs (ICI = 0.042)
 
-# 4. Fit the model on the training split and validate on the test split.
-model <- fit_model(comparisons, embeddings)
-validate_model(model, comparisons, embeddings)
-#> # A tibble: 1 × 4
-#>   n_pairs n_correct accuracy   ici
-#>     <int>     <int>    <dbl> <dbl>
-#> 1    5000      4251    0.850 0.042
+# Document scores with 95% confidence intervals
+result$scores
 
-# 5. Refit on all comparisons, then score all documents.
-model_final <- fit_model(comparisons, embeddings, refit = TRUE)
-scores <- score_documents(model_final, embeddings)
+# Calibration plot
+plot(result)
 ```
+
+`textscale()` handles the full pipeline: generating pairwise comparisons,
+retrieving embeddings, annotating pairs via the OpenAI Batch API, fitting
+and validating a model on a held-out test split, refitting on all
+comparisons, and returning scores for every document.
+
+The individual pipeline steps are also exported if you need finer control:
+
+| Function | Purpose |
+|----------|---------|
+| `generate_comparisons()` | Create train/test comparison pairs |
+| `get_embeddings()` | Retrieve text embeddings |
+| `annotate_comparisons()` | Annotate pairs with an LLM |
+| `fit_model()` | Fit or refit the model |
+| `validate_model()` | Evaluate accuracy on held-out test pairs |
+| `score_documents()` | Score documents on the latent dimension |
 
 ## How it works
 
