@@ -8,6 +8,12 @@ embedding space. An L2-regularized logistic regression model is then fit
 on embedding differences, enabling efficient scoring of new documents
 without additional pairwise annotations.
 
+## See also
+
+Useful links:
+
+- <https://joeornstein.github.io/textscale/>
+
 ## Author
 
 **Maintainer**: Joseph T. Ornstein <jornstein@uga.edu>
