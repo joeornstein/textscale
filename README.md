@@ -55,6 +55,10 @@ result$scores
 plot(result)
 ```
 
+See the [Measuring Political Ad Tone](https://joeornstein.github.io/textscale/articles/ad-tone.html)
+vignette for a worked example using the Carlson & Montgomery (2017) Wisconsin
+ads dataset.
+
 `textscale()` handles the full pipeline: generating pairwise comparisons,
 retrieving embeddings, annotating pairs via the OpenAI Batch API, fitting
 and validating a model on a held-out test split, refitting on all
