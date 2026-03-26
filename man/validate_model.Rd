@@ -5,7 +5,7 @@
 \alias{plot.textscale_validation}
 \title{Validate a textscale model on held-out comparisons}
 \usage{
-validate_model(model, comparisons, embeddings)
+validate_model(model, comparisons, embeddings, force = FALSE)
 
 \method{plot}{textscale_validation}(x, bins = 10, ...)
 }
@@ -20,6 +20,12 @@ present, only test-set rows are used.}
 \item{embeddings}{A numeric matrix of document embeddings. Row \code{i}
 must correspond to document \code{i} in the original \code{documents} vector
 passed to \code{\link[=generate_comparisons]{generate_comparisons()}}.}
+
+\item{force}{Logical. If \code{FALSE} (the default), the function stops
+when accuracy is below 0.55 or ICI exceeds 0.20, and warns when
+accuracy is below 0.65 or ICI exceeds 0.10. Set \code{force = TRUE} to
+downgrade stops to warnings and continue anyway. When calling via
+\code{\link[=textscale]{textscale()}}, pass \code{force = TRUE} there instead.}
 
 \item{x}{A \code{textscale_validation} object.}
 

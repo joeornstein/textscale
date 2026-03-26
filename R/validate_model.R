@@ -30,13 +30,18 @@ utils::globalVariables(c("prob", "result", "mean_pred", "obs_prop", "n"))
 #' @param embeddings A numeric matrix of document embeddings. Row `i`
 #'   must correspond to document `i` in the original `documents` vector
 #'   passed to [textscale::generate_comparisons()].
+#' @param force Logical. If `FALSE` (the default), the function stops
+#'   when accuracy is below 0.55 or ICI exceeds 0.20, and warns when
+#'   accuracy is below 0.65 or ICI exceeds 0.10. Set `force = TRUE` to
+#'   downgrade stops to warnings and continue anyway. When calling via
+#'   [textscale()], pass `force = TRUE` there instead.
 #'
 #' @return A `textscale_validation` object. Call [print()] to display
 #'   the accuracy and ICI metrics; call [plot()] to display a calibration
 #'   plot and retrieve the underlying `ggplot` object.
 #'
 #' @export
-validate_model <- function(model, comparisons, embeddings) {
+validate_model <- function(model, comparisons, embeddings, force = FALSE) {
   if ("split" %in% names(comparisons)) {
     comparisons <- comparisons[comparisons$split == "test", ]
   }
@@ -56,17 +61,23 @@ validate_model <- function(model, comparisons, embeddings) {
   fitted  <- as.numeric(predict(gam_fit, newdata = data.frame(prob = grid)))
   ici     <- mean(abs(fitted - grid))
 
+  acc <- n_correct / nrow(comparisons)
+
   metrics <- tibble::tibble(
     n_pairs   = nrow(comparisons),
     n_correct = n_correct,
-    accuracy  = n_correct / nrow(comparisons),
+    accuracy  = acc,
     ici       = ici
   )
 
-  structure(
+  out <- structure(
     list(metrics = metrics, cal_df = cal_df, ici = ici),
     class = "textscale_validation"
   )
+
+  .check_validation_metrics(out, force = force)
+
+  out
 }
 
 #' @export

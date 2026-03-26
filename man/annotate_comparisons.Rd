@@ -9,7 +9,8 @@ annotate_comparisons(
   prompt,
   model = "gpt-4.1-mini",
   system_prompt = "Respond with a single letter ('A' or 'B') only. No ties allowed.",
-  path = NULL,
+  path = "textscale_annotations.json",
+  parallel = FALSE,
   cache = NULL,
   ...
 )
@@ -28,10 +29,16 @@ Defaults to \code{"gpt-4.1-mini"}.}
 \item{system_prompt}{System prompt sent to the LLM. Defaults to
 instructing the model to respond with a single letter.}
 
-\item{path}{Optional file path for checkpointing batch API calls
-(passed to \code{\link[ellmer:batch_chat]{ellmer::batch_chat_text()}}). Useful for resuming
-interrupted runs. If \code{NULL}, uses \code{\link[ellmer:parallel_chat]{ellmer::parallel_chat_text()}}
-instead.}
+\item{path}{File path for checkpointing batch API calls (passed to
+\code{\link[ellmer:batch_chat]{ellmer::batch_chat_text()}}). Defaults to
+\code{"textscale_annotations.json"} in the current working directory.
+Set to \code{NULL} to disable checkpointing. Ignored when
+\code{parallel = TRUE}.}
+
+\item{parallel}{Logical. If \code{FALSE} (the default), annotations are
+submitted via the OpenAI Batch API at 50\% of standard prices.
+Set to \code{TRUE} to use \code{\link[ellmer:parallel_chat]{ellmer::parallel_chat_text()}} for immediate
+results at standard prices.}
 
 \item{cache}{Optional path to an \code{.rds} file. If the file exists,
 cached annotations are matched to the incoming \code{comparisons} by
@@ -56,9 +63,13 @@ reference any column in \code{comparisons} with \code{{{column_name}}} syntax.
 Most prompts will use \code{{{text_a}}} and \code{{{text_b}}}.
 }
 \details{
-When \code{path} is supplied the underlying \code{\link[ellmer:batch_chat]{ellmer::batch_chat_text()}}
-call caches its results to that file, so interrupted jobs can be
-resumed without re-calling the API.
+By default, annotations are submitted via the OpenAI Batch API
+(\code{\link[ellmer:batch_chat]{ellmer::batch_chat_text()}}), which is 50\% cheaper than standard
+pricing but may take up to 24 hours to complete. The \code{path} argument
+checkpoints batch progress to a \code{.json} file so interrupted jobs can
+be resumed without re-calling the API. Set \code{parallel = TRUE} to use
+\code{\link[ellmer:parallel_chat]{ellmer::parallel_chat_text()}} instead, which returns results
+immediately at standard API prices.
 
 Before sending requests to the API, the function prints an estimated
 cost based on approximate token counts (1 token ≈ 4 characters) and

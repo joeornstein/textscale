@@ -55,9 +55,13 @@
 #' reference any column in `comparisons` with `{{column_name}}` syntax.
 #' Most prompts will use `{{text_a}}` and `{{text_b}}`.
 #'
-#' When `path` is supplied the underlying [ellmer::batch_chat_text()]
-#' call caches its results to that file, so interrupted jobs can be
-#' resumed without re-calling the API.
+#' By default, annotations are submitted via the OpenAI Batch API
+#' ([ellmer::batch_chat_text()]), which is 50% cheaper than standard
+#' pricing but may take up to 24 hours to complete. The `path` argument
+#' checkpoints batch progress to a `.json` file so interrupted jobs can
+#' be resumed without re-calling the API. Set `parallel = TRUE` to use
+#' [ellmer::parallel_chat_text()] instead, which returns results
+#' immediately at standard API prices.
 #'
 #' Before sending requests to the API, the function prints an estimated
 #' cost based on approximate token counts (1 token ≈ 4 characters) and
@@ -75,10 +79,15 @@
 #'   Defaults to `"gpt-4.1-mini"`.
 #' @param system_prompt System prompt sent to the LLM. Defaults to
 #'   instructing the model to respond with a single letter.
-#' @param path Optional file path for checkpointing batch API calls
-#'   (passed to [ellmer::batch_chat_text()]). Useful for resuming
-#'   interrupted runs. If `NULL`, uses [ellmer::parallel_chat_text()]
-#'   instead.
+#' @param path File path for checkpointing batch API calls (passed to
+#'   [ellmer::batch_chat_text()]). Defaults to
+#'   `"textscale_annotations.json"` in the current working directory.
+#'   Set to `NULL` to disable checkpointing. Ignored when
+#'   `parallel = TRUE`.
+#' @param parallel Logical. If `FALSE` (the default), annotations are
+#'   submitted via the OpenAI Batch API at 50% of standard prices.
+#'   Set to `TRUE` to use [ellmer::parallel_chat_text()] for immediate
+#'   results at standard prices.
 #' @param cache Optional path to an `.rds` file. If the file exists,
 #'   cached annotations are matched to the incoming `comparisons` by
 #'   `text_a` and `text_b`. Rows whose text pair is found in the cache
@@ -98,7 +107,8 @@ annotate_comparisons <- function(
     prompt,
     model = "gpt-4.1-mini",
     system_prompt = "Respond with a single letter ('A' or 'B') only. No ties allowed.",
-    path = NULL,
+    path = "textscale_annotations.json",
+    parallel = FALSE,
     cache = NULL,
     ...) {
 
@@ -146,13 +156,13 @@ annotate_comparisons <- function(
     c(list(prompt), as.list(new_rows))
   )
 
-  cost_msg <- .cost_estimate_message(prompts, system_prompt, model, batch = !is.null(path))
+  cost_msg <- .cost_estimate_message(prompts, system_prompt, model, batch = !parallel)
   if (!is.null(cost_msg)) message(cost_msg)
 
-  responses <- if (!is.null(path)) {
-    .batch_chat_text(chat, prompts, path = path, ...)
-  } else {
+  responses <- if (parallel) {
     .parallel_chat_text(chat, prompts, ...)
+  } else {
+    .batch_chat_text(chat, prompts, path = path, ...)
   }
 
   comparisons$winner[needs_annotation] <- trimws(responses)

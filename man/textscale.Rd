@@ -14,11 +14,13 @@ textscale(
   llm_model = "gpt-4.1-mini",
   embeddings_cache = "textscale_embeddings.rds",
   annotations_cache = "textscale_annotations.rds",
-  annotations_path = NULL,
+  annotations_path = "textscale_annotations.json",
+  parallel = FALSE,
   method = "ridge",
   ci = TRUE,
   ci_method = "laplace",
   validate = TRUE,
+  force = FALSE,
   ...
 )
 }
@@ -57,8 +59,15 @@ file. Passed to \code{\link[=annotate_comparisons]{annotate_comparisons()}}. Def
 Set to \code{NULL} to disable caching.}
 
 \item{annotations_path}{File path for checkpointing batch API calls.
-Passed to \code{annotate_comparisons()} as \code{path}. Recommended for
-runs with more than ~5,000 pairs. Defaults to \code{NULL}.}
+Passed to \code{\link[=annotate_comparisons]{annotate_comparisons()}} as \code{path}. Defaults to
+\code{"textscale_annotations.json"} in the current working directory.
+Set to \code{NULL} to disable checkpointing. Ignored when
+\code{parallel = TRUE}.}
+
+\item{parallel}{Logical. If \code{FALSE} (the default), annotations are
+submitted via the OpenAI Batch API at 50\% of standard prices.
+Set to \code{TRUE} to use \code{\link[ellmer:parallel_chat]{ellmer::parallel_chat_text()}} for immediate
+results at standard prices.}
 
 \item{method}{Fitting method passed to \code{\link[=fit_model]{fit_model()}}. One of
 \code{"ridge"} (default), \code{"lasso"}, \code{"enet"}, or \code{"svm"}.}
@@ -73,6 +82,13 @@ Defaults to \code{TRUE}.}
 
 \item{validate}{Logical. If \code{TRUE} (the default), \code{\link[=validate_model]{validate_model()}}
 is called on the held-out test split and its output is printed.}
+
+\item{force}{Logical. If \code{FALSE} (the default), the pipeline stops
+when validation metrics are poor (accuracy < 0.55 or ICI > 0.20)
+and warns when they are marginal (accuracy < 0.65 or ICI > 0.10).
+Set \code{force = TRUE} to downgrade stops to warnings and continue
+scoring regardless of validation results. Ignored when
+\code{validate = FALSE}.}
 
 \item{...}{Additional arguments passed to \code{\link[=fit_model]{fit_model()}} (e.g.
 \code{alpha}, \code{nlambda}, \code{lambda_min_ratio}).}

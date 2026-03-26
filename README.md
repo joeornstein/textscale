@@ -20,7 +20,19 @@ pak::pak("joeornstein/textscale")
 
 textscale uses [ellmer](https://ellmer.tidyverse.org/) for LLM calls and
 [fuzzylink](https://github.com/joeornstein/fuzzylink) for embeddings. Both
-require an OpenAI API key set as `OPENAI_API_KEY` in your environment.
+require an OpenAI API key.
+
+## API Key Setup
+
+To install your key in `.Renviron` for use across sessions, run:
+
+```r
+fuzzylink::openai_api_key("your-key-here", install = TRUE)
+readRenviron("~/.Renviron")  # reload so the key is available immediately
+```
+
+You can get a key at [platform.openai.com](https://platform.openai.com/api-keys).
+To verify it's set: `Sys.getenv("OPENAI_API_KEY")`.
 
 ## Usage
 

@@ -31,8 +31,14 @@
 #'   `"textscale_annotations.rds"` in the current working directory.
 #'   Set to `NULL` to disable caching.
 #' @param annotations_path File path for checkpointing batch API calls.
-#'   Passed to `annotate_comparisons()` as `path`. Recommended for
-#'   runs with more than ~5,000 pairs. Defaults to `NULL`.
+#'   Passed to [annotate_comparisons()] as `path`. Defaults to
+#'   `"textscale_annotations.json"` in the current working directory.
+#'   Set to `NULL` to disable checkpointing. Ignored when
+#'   `parallel = TRUE`.
+#' @param parallel Logical. If `FALSE` (the default), annotations are
+#'   submitted via the OpenAI Batch API at 50% of standard prices.
+#'   Set to `TRUE` to use [ellmer::parallel_chat_text()] for immediate
+#'   results at standard prices.
 #' @param method Fitting method passed to [fit_model()]. One of
 #'   `"ridge"` (default), `"lasso"`, `"enet"`, or `"svm"`.
 #' @param ci Logical. If `TRUE`, the `scores` element of the returned
@@ -43,6 +49,12 @@
 #'   [score_documents()]. Ignored when `ci = FALSE`.
 #' @param validate Logical. If `TRUE` (the default), [validate_model()]
 #'   is called on the held-out test split and its output is printed.
+#' @param force Logical. If `FALSE` (the default), the pipeline stops
+#'   when validation metrics are poor (accuracy < 0.55 or ICI > 0.20)
+#'   and warns when they are marginal (accuracy < 0.65 or ICI > 0.10).
+#'   Set `force = TRUE` to downgrade stops to warnings and continue
+#'   scoring regardless of validation results. Ignored when
+#'   `validate = FALSE`.
 #' @param ... Additional arguments passed to [fit_model()] (e.g.
 #'   `alpha`, `nlambda`, `lambda_min_ratio`).
 #'
@@ -75,11 +87,13 @@ textscale <- function(
     llm_model = "gpt-4.1-mini",
     embeddings_cache = "textscale_embeddings.rds",
     annotations_cache = "textscale_annotations.rds",
-    annotations_path = NULL,
+    annotations_path = "textscale_annotations.json",
+    parallel = FALSE,
     method = "ridge",
     ci = TRUE,
     ci_method = "laplace",
     validate = TRUE,
+    force = FALSE,
     ...) {
 
   # Task instruction goes in the system prompt; each turn contains only
@@ -109,7 +123,8 @@ textscale <- function(
     system_prompt = system_prompt,
     model         = llm_model,
     cache         = annotations_cache,
-    path          = annotations_path
+    path          = annotations_path,
+    parallel      = parallel
   )
 
   # Step 4: Fit evaluation model on training split
@@ -117,7 +132,7 @@ textscale <- function(
 
   # Step 5: Validate on held-out test split
   metrics <- if (validate) {
-    validate_model(model_eval, comparisons, embeddings)
+    validate_model(model_eval, comparisons, embeddings, force = force)
   } else {
     NULL
   }

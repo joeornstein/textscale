@@ -76,7 +76,7 @@ test_that("svm scores correlate strongly with the true latent dimension", {
 })
 
 test_that("validate_model works with svm model", {
-  result <- validate_model(model_svm, comparisons, emb)
+  result <- suppressWarnings(validate_model(model_svm, comparisons, emb))
   expect_s3_class(result, "textscale_validation")
   expect_named(result$metrics, c("n_pairs", "n_correct", "accuracy", "ici"))
   expect_gte(result$metrics$accuracy, 0.5)
