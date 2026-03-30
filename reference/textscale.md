@@ -12,6 +12,8 @@ textscale(
   documents,
   prompt,
   prop = 0.8,
+  holdout = NULL,
+  blocks = NULL,
   n_train = 10000,
   n_test = 5000,
   seed = NULL,
@@ -46,7 +48,21 @@ textscale(
 - prop:
 
   Proportion of documents assigned to the training split. Defaults to
-  `0.8`.
+  `0.8`. Cannot be used together with `holdout`.
+
+- holdout:
+
+  Optional logical vector the same length as `documents`. `TRUE` marks a
+  document for the test set, `FALSE` for the training set. When
+  supplied, overrides `prop` for train/test assignment. Cannot be used
+  together with `prop`.
+
+- blocks:
+
+  Optional vector (character, factor, or integer) the same length as
+  `documents`. When supplied, only within-block pairs are generated. See
+  [`generate_comparisons()`](https://joeornstein.github.io/textscale/reference/generate_comparisons.md)
+  for details.
 
 - n_train:
 

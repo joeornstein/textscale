@@ -54,6 +54,8 @@ comparisons, and returns scores for every document.</p>
 <span>  <span class="va">documents</span>,</span>
 <span>  <span class="va">prompt</span>,</span>
 <span>  prop <span class="op">=</span> <span class="fl">0.8</span>,</span>
+<span>  holdout <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  blocks <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n_train <span class="op">=</span> <span class="fl">10000</span>,</span>
 <span>  n_test <span class="op">=</span> <span class="fl">5000</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -89,7 +91,20 @@ labelled options A and B.</p></dd>
 
 <dt id="arg-prop">prop<a class="anchor" aria-label="anchor" href="#arg-prop"></a></dt>
 <dd><p>Proportion of documents assigned to the training split.
-Defaults to <code>0.8</code>.</p></dd>
+Defaults to <code>0.8</code>. Cannot be used together with <code>holdout</code>.</p></dd>
+
+
+<dt id="arg-holdout">holdout<a class="anchor" aria-label="anchor" href="#arg-holdout"></a></dt>
+<dd><p>Optional logical vector the same length as <code>documents</code>.
+<code>TRUE</code> marks a document for the test set, <code>FALSE</code> for the training
+set. When supplied, overrides <code>prop</code> for train/test assignment.
+Cannot be used together with <code>prop</code>.</p></dd>
+
+
+<dt id="arg-blocks">blocks<a class="anchor" aria-label="anchor" href="#arg-blocks"></a></dt>
+<dd><p>Optional vector (character, factor, or integer) the same
+length as <code>documents</code>. When supplied, only within-block pairs are
+generated. See <code><a href="generate_comparisons.html">generate_comparisons()</a></code> for details.</p></dd>
 
 
 <dt id="arg-n-train">n_train<a class="anchor" aria-label="anchor" href="#arg-n-train"></a></dt>

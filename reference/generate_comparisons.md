@@ -13,6 +13,8 @@ generate_comparisons(
   n_train = 10000,
   n_test = 5000,
   prop = NULL,
+  holdout = NULL,
+  blocks = NULL,
   seed = NULL
 )
 ```
@@ -27,21 +29,33 @@ generate_comparisons(
 
   Maximum number of unique pairs to sample from the training set.
   Defaults to `10000`. Set to `NULL` to return all possible training
-  pairs. Ignored when `prop` is `NULL`, in which case it limits the
-  overall sample.
+  pairs. When no split is active, this limits the overall sample.
 
 - n_test:
 
   Maximum number of unique pairs to sample from the test set. Defaults
   to `5000`. Set to `NULL` to return all possible test pairs. Only used
-  when `prop` is supplied.
+  when a split is active (`prop` or `holdout`).
 
 - prop:
 
   Optional proportion of documents assigned to the training set (e.g.
-  `0.8`). When supplied, a `split` column is added to the result and
-  `doc_id_a`/`doc_id_b` index into the full `documents` vector so the
-  same embedding matrix can be used for both fitting and validation.
+  `0.8`). When supplied, a `split` column is added to the result. Cannot
+  be used together with `holdout`.
+
+- holdout:
+
+  Optional logical vector the same length as `documents`. `TRUE` marks a
+  document for the test set, `FALSE` for the training set. When
+  supplied, a `split` column is added to the result. Cannot be used
+  together with `prop`.
+
+- blocks:
+
+  Optional vector (character, factor, or integer) the same length as
+  `documents`. When supplied, only within-block pairs are generated and
+  a `block` column is included in the output. Blocks with fewer than 2
+  documents are skipped.
 
 - seed:
 
@@ -51,19 +65,21 @@ generate_comparisons(
 
 A tibble with columns `doc_id_a`, `doc_id_b`, `text_a`, and `text_b`.
 `doc_id_a` and `doc_id_b` are integer row indices into `documents`. When
-`prop` is supplied, an additional `split` column contains `"train"` or
-`"test"`.
+a split is active, an additional `split` column contains `"train"` or
+`"test"`. When `blocks` is supplied, a `block` column identifies which
+block each pair belongs to.
 
 ## Details
 
-When `prop` is supplied, documents are randomly partitioned into
-training and test sets. Up to `n_train` within-train pairs and up to
-`n_test` within-test pairs are sampled, and a `split` column (`"train"`
-/ `"test"`) is added to the result.
+When `prop` or `holdout` is supplied, the result includes a `split`
+column (`"train"` / `"test"`) that
 [`fit_model()`](https://joeornstein.github.io/textscale/reference/fit_model.md)
 and
 [`validate_model()`](https://joeornstein.github.io/textscale/reference/validate_model.md)
-both respect this column automatically.
+respect automatically.
+
+When `blocks` is supplied, only within-block pairs are generated. Blocks
+with fewer than 2 documents are skipped with a message.
 
 When fewer unique pairs exist than the requested `n_train` or `n_test`,
 all available pairs are returned with a message.
@@ -93,4 +109,20 @@ generate_comparisons(docs, prop = 0.8, seed = 1)
 #> 1        1        3 The quick brown fox Hello world train
 #> 2        1        4 The quick brown fox Foo bar     train
 #> 3        3        4 Hello world         Foo bar     train
+# With blocks
+generate_comparisons(docs, blocks = c("a", "a", "b", "b"), n_train = NULL)
+#> # A tibble: 2 × 5
+#>   doc_id_a doc_id_b text_a              text_b     block
+#>      <int>    <int> <chr>               <chr>      <chr>
+#> 1        1        2 The quick brown fox A lazy dog a    
+#> 2        3        4 Hello world         Foo bar    b    
+# With user-supplied holdout
+generate_comparisons(docs, holdout = c(FALSE, FALSE, TRUE, TRUE))
+#> `n_train` (10000) exceeds the number of unique train pairs (1). Using all 1.
+#> `n_test` (5000) exceeds the number of unique test pairs (1). Using all 1.
+#> # A tibble: 2 × 5
+#>   doc_id_a doc_id_b text_a              text_b     split
+#>      <int>    <int> <chr>               <chr>      <chr>
+#> 1        1        2 The quick brown fox A lazy dog train
+#> 2        3        4 Hello world         Foo bar    test 
 ```
