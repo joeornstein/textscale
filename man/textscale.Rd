@@ -8,6 +8,8 @@ textscale(
   documents,
   prompt,
   prop = 0.8,
+  holdout = NULL,
+  blocks = NULL,
   n_train = 10000,
   n_test = 5000,
   seed = NULL,
@@ -34,7 +36,16 @@ needed. For example: \code{"Which political ad is more negative toward its oppon
 labelled options A and B.}
 
 \item{prop}{Proportion of documents assigned to the training split.
-Defaults to \code{0.8}.}
+Defaults to \code{0.8}. Cannot be used together with \code{holdout}.}
+
+\item{holdout}{Optional logical vector the same length as \code{documents}.
+\code{TRUE} marks a document for the test set, \code{FALSE} for the training
+set. When supplied, overrides \code{prop} for train/test assignment.
+Cannot be used together with \code{prop}.}
+
+\item{blocks}{Optional vector (character, factor, or integer) the same
+length as \code{documents}. When supplied, only within-block pairs are
+generated. See \code{\link[=generate_comparisons]{generate_comparisons()}} for details.}
 
 \item{n_train}{Maximum number of training comparison pairs to
 generate. Defaults to \code{10000}.}

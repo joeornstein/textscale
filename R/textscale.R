@@ -13,7 +13,14 @@
 #'   its opponent?"`. The document text is appended automatically as
 #'   labelled options A and B.
 #' @param prop Proportion of documents assigned to the training split.
-#'   Defaults to `0.8`.
+#'   Defaults to `0.8`. Cannot be used together with `holdout`.
+#' @param holdout Optional logical vector the same length as `documents`.
+#'   `TRUE` marks a document for the test set, `FALSE` for the training
+#'   set. When supplied, overrides `prop` for train/test assignment.
+#'   Cannot be used together with `prop`.
+#' @param blocks Optional vector (character, factor, or integer) the same
+#'   length as `documents`. When supplied, only within-block pairs are
+#'   generated. See [generate_comparisons()] for details.
 #' @param n_train Maximum number of training comparison pairs to
 #'   generate. Defaults to `10000`.
 #' @param n_test Maximum number of test comparison pairs to generate.
@@ -81,6 +88,8 @@ textscale <- function(
     documents,
     prompt,
     prop = 0.8,
+    holdout = NULL,
+    blocks = NULL,
     n_train = 10000,
     n_test = 5000,
     seed = NULL,
@@ -104,12 +113,18 @@ textscale <- function(
     "\nRespond with a single letter ('A' or 'B') only. No ties allowed."
   )
 
+
+  # When holdout is supplied, don't pass prop
+  use_prop <- if (!is.null(holdout)) NULL else prop
+
   # Step 1: Generate pairwise comparisons with train/test split
   comparisons <- generate_comparisons(
     documents,
     n_train = n_train,
     n_test  = n_test,
-    prop    = prop,
+    prop    = use_prop,
+    holdout = holdout,
+    blocks  = blocks,
     seed    = seed
   )
 

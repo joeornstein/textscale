@@ -9,6 +9,8 @@ generate_comparisons(
   n_train = 10000,
   n_test = 5000,
   prop = NULL,
+  holdout = NULL,
+  blocks = NULL,
   seed = NULL
 )
 }
@@ -17,26 +19,35 @@ generate_comparisons(
 
 \item{n_train}{Maximum number of unique pairs to sample from the
 training set. Defaults to \code{10000}. Set to \code{NULL} to return all
-possible training pairs. Ignored when \code{prop} is \code{NULL}, in which
-case it limits the overall sample.}
+possible training pairs. When no split is active, this limits the
+overall sample.}
 
 \item{n_test}{Maximum number of unique pairs to sample from the test
 set. Defaults to \code{5000}. Set to \code{NULL} to return all possible test
-pairs. Only used when \code{prop} is supplied.}
+pairs. Only used when a split is active (\code{prop} or \code{holdout}).}
 
 \item{prop}{Optional proportion of documents assigned to the training
 set (e.g. \code{0.8}). When supplied, a \code{split} column is added to the
-result and \code{doc_id_a}/\code{doc_id_b} index into the full \code{documents}
-vector so the same embedding matrix can be used for both fitting
-and validation.}
+result. Cannot be used together with \code{holdout}.}
+
+\item{holdout}{Optional logical vector the same length as \code{documents}.
+\code{TRUE} marks a document for the test set, \code{FALSE} for the training
+set. When supplied, a \code{split} column is added to the result. Cannot
+be used together with \code{prop}.}
+
+\item{blocks}{Optional vector (character, factor, or integer) the same
+length as \code{documents}. When supplied, only within-block pairs are
+generated and a \code{block} column is included in the output. Blocks
+with fewer than 2 documents are skipped.}
 
 \item{seed}{Optional integer random seed for reproducibility.}
 }
 \value{
 A tibble with columns \code{doc_id_a}, \code{doc_id_b}, \code{text_a}, and
 \code{text_b}. \code{doc_id_a} and \code{doc_id_b} are integer row indices into
-\code{documents}. When \code{prop} is supplied, an additional \code{split} column
-contains \code{"train"} or \code{"test"}.
+\code{documents}. When a split is active, an additional \code{split} column
+contains \code{"train"} or \code{"test"}. When \code{blocks} is supplied, a
+\code{block} column identifies which block each pair belongs to.
 }
 \description{
 Samples unique pairs of documents to be used as input to
@@ -44,12 +55,13 @@ Samples unique pairs of documents to be used as input to
 represents one comparison between two documents.
 }
 \details{
-When \code{prop} is supplied, documents are randomly partitioned into
-training and test sets. Up to \code{n_train} within-train pairs and up to
-\code{n_test} within-test pairs are sampled, and a \code{split} column
-(\code{"train"} / \code{"test"}) is added to the result.
-\code{\link[=fit_model]{fit_model()}} and \code{\link[=validate_model]{validate_model()}} both
-respect this column automatically.
+When \code{prop} or \code{holdout} is supplied, the result includes a \code{split}
+column (\code{"train"} / \code{"test"}) that
+\code{\link[=fit_model]{fit_model()}} and \code{\link[=validate_model]{validate_model()}} respect
+automatically.
+
+When \code{blocks} is supplied, only within-block pairs are generated. Blocks
+with fewer than 2 documents are skipped with a message.
 
 When fewer unique pairs exist than the requested \code{n_train} or
 \code{n_test}, all available pairs are returned with a message.
@@ -60,4 +72,8 @@ docs <- c("The quick brown fox", "A lazy dog", "Hello world", "Foo bar")
 generate_comparisons(docs, n_train = NULL)
 # With an 80/20 train/test split, default sample sizes
 generate_comparisons(docs, prop = 0.8, seed = 1)
+# With blocks
+generate_comparisons(docs, blocks = c("a", "a", "b", "b"), n_train = NULL)
+# With user-supplied holdout
+generate_comparisons(docs, holdout = c(FALSE, FALSE, TRUE, TRUE))
 }
