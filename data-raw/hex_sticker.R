@@ -32,9 +32,9 @@ fig_y <- (txt_y1 + txt_y2) / 2   # figure vertically centered on text block
 p <- ggplot() +
   # Two-line lorem ipsum
   annotate("text", x = tx, y = txt_y1, label = line1,
-           size = 2.9, color = text_col, family = "fira", hjust = 0.5) +
+           size = 3.3, color = text_col, family = "fira", hjust = 0.5) +
   annotate("text", x = tx, y = txt_y2, label = line2,
-           size = 2.9, color = text_col, family = "fira", hjust = 0.5) +
+           size = 3.3, color = text_col, family = "fira", hjust = 0.5) +
 
   # Ruler shaft
   annotate("segment", x = r_lo, xend = r_hi, y = r_y, yend = r_y,
@@ -87,8 +87,8 @@ sticker(
 
   s_x      = 0.95,
   s_y      = 1.05,
-  s_width  = 1.55,
-  s_height = 1.30,
+  s_width  = 1.95,
+  s_height = 1.70,
 
   h_fill   = bg_col,
   h_color  = "#2166AC",  # blue hex border
