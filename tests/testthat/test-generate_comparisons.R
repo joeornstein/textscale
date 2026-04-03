@@ -128,14 +128,17 @@ test_that("blocks with seed is reproducible", {
 
 # --- rejection sampling tests ---
 
-test_that("rejection sampling produces correct, unique, canonical pairs", {
+test_that("rejection sampling produces correct, unique pairs", {
   # 200 docs → choose(200,2) = 19900 possible; requesting 50 triggers rejection sampling
   docs200 <- paste("doc", seq_len(200))
   out <- generate_comparisons(docs200, n_train = 50, seed = 314)
   expect_equal(nrow(out), 50)
-  expect_true(all(out$doc_id_a < out$doc_id_b))
-  keys <- paste(out$doc_id_a, out$doc_id_b)
+  expect_true(all(out$doc_id_a != out$doc_id_b))
+  # Uniqueness: canonical key should have no duplicates
+  keys <- paste(pmin(out$doc_id_a, out$doc_id_b), pmax(out$doc_id_a, out$doc_id_b))
   expect_equal(length(unique(keys)), 50)
+  # Position assignment should not always put the smaller id in a
+  expect_true(any(out$doc_id_a > out$doc_id_b))
 })
 
 test_that("rejection sampling within blocks works for large blocks", {
@@ -144,8 +147,8 @@ test_that("rejection sampling within blocks works for large blocks", {
   out <- generate_comparisons(docs200, blocks = blk, n_train = 40, seed = 628)
   expect_equal(nrow(out), 40)
   expect_true(all(blk[out$doc_id_a] == blk[out$doc_id_b]))
-  expect_true(all(out$doc_id_a < out$doc_id_b))
-  keys <- paste(out$doc_id_a, out$doc_id_b)
+  expect_true(all(out$doc_id_a != out$doc_id_b))
+  keys <- paste(pmin(out$doc_id_a, out$doc_id_b), pmax(out$doc_id_a, out$doc_id_b))
   expect_equal(length(unique(keys)), 40)
 })
 

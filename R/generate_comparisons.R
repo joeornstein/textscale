@@ -124,11 +124,12 @@ generate_comparisons <- function(documents,
       b <- idx[sample.int(k, batch, replace = TRUE)]
       keep <- a != b
       a <- a[keep]; b <- b[keep]
-      swap <- a > b
-      tmp <- a[swap]; a[swap] <- b[swap]; b[swap] <- tmp
+      # Canonical order for dedup key only; keep original a/b assignment
+      lo <- pmin(a, b)
+      hi <- pmax(a, b)
       for (i in seq_along(a)) {
         if (n_found >= n) break
-        key <- paste0(a[i], "_", b[i])
+        key <- paste0(lo[i], "_", hi[i])
         if (!exists(key, envir = seen, inherits = FALSE)) {
           n_found <- n_found + 1L
           ids_a[n_found] <- a[i]

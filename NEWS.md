@@ -1,5 +1,10 @@
 # textscale (development)
 
+* `generate_comparisons()`: fixed bias in rejection sampling that always placed
+  earlier document IDs in the `doc_id_a` column. Pair assignment is now random,
+  preventing spurious correlation when documents are ordered by the measure of
+  interest.
+
 * `textscale()` gains a `ci_method` argument (`"laplace"` or `"bootstrap"`) passed to `score_documents()`. `comparisons` is now forwarded automatically so `ci_method = "bootstrap"` works without extra steps.
 
 * `textscale()` now defaults to `ci = TRUE` (scores are returned as a tibble with `score`, `lower`, and `upper` columns). The `embeddings_cache` and `annotations_cache` arguments now default to `"textscale_embeddings.rds"` and `"textscale_annotations.rds"` in the working directory, enabling caching without any configuration.
