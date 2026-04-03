@@ -9,7 +9,7 @@ test_that("cache is returned immediately when file exists", {
   cached$winner <- "A"
   saveRDS(cached, tmp)
 
-  result <- annotate_comparisons(comparisons, prompt = "irrelevant", cache = tmp, parallel = TRUE)
+  result <- annotate_comparisons(comparisons, instructions = "irrelevant", cache = tmp, parallel = TRUE)
   expect_equal(result, cached, ignore_attr = TRUE)
 })
 
@@ -22,7 +22,7 @@ test_that("cache file is written after annotation", {
     .parallel_chat_text = function(chat, prompts, ...) rep("A", length(prompts))
   )
 
-  result <- annotate_comparisons(comparisons, prompt = "?", cache = tmp_cache, parallel = TRUE)
+  result <- annotate_comparisons(comparisons, instructions = "?", cache = tmp_cache, parallel = TRUE)
   expect_true(file.exists(tmp_cache))
   expect_equal(readRDS(tmp_cache), result)
 })

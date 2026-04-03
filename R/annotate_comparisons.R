@@ -50,10 +50,19 @@
 #' Annotate pairwise comparisons using an LLM
 #'
 #' Submits each comparison pair to an LLM and records which document
-#' "wins" on the latent dimension of interest. The `prompt` is
-#' interpolated for each row using [ellmer::interpolate()], so it may
-#' reference any column in `comparisons` with `{{column_name}}` syntax.
-#' Most prompts will use `{{text_a}}` and `{{text_b}}`.
+#' "wins" on the latent dimension of interest.
+#'
+#' The simplest way to use this function is to supply `instructions`
+#' describing the comparison task in plain language (e.g.,
+#' `"Which text is more conservative?"`). The instructions are
+#' automatically prepended to the system prompt, and each LLM turn
+#' contains the two documents formatted as
+#' `"A: <text_a>\\nB: <text_b>"`.
+#'
+#' For advanced use, the `prompt` argument is an
+#' [ellmer::interpolate()] template string that may reference any
+#' column in `comparisons` with `{{column_name}}` syntax (most
+#' commonly `{{text_a}}` and `{{text_b}}`).
 #'
 #' By default, annotations are submitted via the OpenAI Batch API
 #' ([ellmer::batch_chat_text()]), which is 50% cheaper than standard
@@ -71,14 +80,20 @@
 #'
 #' @param comparisons A tibble produced by
 #'   [textscale::generate_comparisons()].
-#' @param prompt An [ellmer::interpolate()] template string. Use
-#'   `{{text_a}}` and `{{text_b}}` to reference the two documents being
-#'   compared. Example: `"Which is heavier?\\nA: {{text_a}}\\nB:
-#'   {{text_b}}"`.
+#' @param instructions A plain-language description of the comparison
+#'   task (e.g., `"Which text is more conservative?"`). Prepended to
+#'   `system_prompt` so the LLM knows what to judge. When using
+#'   `annotate_comparisons()` on its own, this is typically the only
+#'   argument you need beyond `comparisons`.
+#' @param prompt An [ellmer::interpolate()] template string for
+#'   formatting each document pair. Defaults to
+#'   `"A: {{text_a}}\\nB: {{text_b}}"`. Override this only if you need
+#'   a non-standard document layout.
 #' @param model Character string naming the OpenAI model to use.
 #'   Defaults to `"gpt-4.1-mini"`.
 #' @param system_prompt System prompt sent to the LLM. Defaults to
-#'   instructing the model to respond with a single letter.
+#'   instructing the model to respond with a single letter. When
+#'   `instructions` is supplied, it is prepended to this value.
 #' @param path File path for checkpointing batch API calls (passed to
 #'   [ellmer::batch_chat_text()]). Defaults to
 #'   `"textscale_annotations.json"` in the current working directory.
@@ -107,13 +122,18 @@
 #' @export
 annotate_comparisons <- function(
     comparisons,
-    prompt,
+    instructions = NULL,
+    prompt = "A: {{text_a}}\nB: {{text_b}}",
     model = "gpt-4.1-mini",
     system_prompt = "Respond with a single letter ('A' or 'B') only. No ties allowed.",
     path = "textscale_annotations.json",
     parallel = FALSE,
     cache = NULL,
     ...) {
+
+  if (!is.null(instructions)) {
+    system_prompt <- paste0(instructions, "\n", system_prompt)
+  }
 
   hash <- .prompt_hash(prompt, system_prompt)
 

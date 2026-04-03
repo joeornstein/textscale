@@ -1,6 +1,6 @@
 Package: textscale
 Title: Measure Latent Quantities from Text Using Pairwise Comparisons
-Version: 0.0.0.9002
+Version: 0.0.0.9003
 Authors@R: 
     person("Joseph T.", "Ornstein", , "jornstein@uga.edu", role = c("aut", "cre"))
 Description: Implements a method for measuring latent quantities (e.g.,

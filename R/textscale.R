@@ -105,15 +105,6 @@ textscale <- function(
     force = FALSE,
     ...) {
 
-  # Task instruction goes in the system prompt; each turn contains only
-  # the document pair. This keeps per-call content minimal and separates
-  # "what to do" from "the data".
-  system_prompt <- paste0(
-    prompt,
-    "\nRespond with a single letter ('A' or 'B') only. No ties allowed."
-  )
-
-
   # When holdout is supplied, don't pass prop
   use_prop <- if (!is.null(holdout)) NULL else prop
 
@@ -134,8 +125,7 @@ textscale <- function(
   # Step 3: Annotate comparisons with LLM
   comparisons <- annotate_comparisons(
     comparisons,
-    prompt        = "A: {{text_a}}\nB: {{text_b}}",
-    system_prompt = system_prompt,
+    instructions  = prompt,
     model         = llm_model,
     cache         = annotations_cache,
     path          = annotations_path,

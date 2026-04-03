@@ -1,5 +1,12 @@
 # textscale (development)
 
+* `annotate_comparisons()` gains an `instructions` argument for describing the
+  comparison task in plain language (e.g., `"Which text is more conservative?"`).
+  Instructions are prepended to the system prompt automatically, and `prompt`
+  now defaults to `"A: {{text_a}}\nB: {{text_b}}"`, so users no longer need to
+  embed the document template themselves. `textscale()` now passes its `prompt`
+  argument through as `instructions`.
+
 * `generate_comparisons()`: fixed bias in rejection sampling that always placed
   earlier document IDs in the `doc_id_a` column. Pair assignment is now random,
   preventing spurious correlation when documents are ordered by the measure of
