@@ -64,6 +64,7 @@ comparisons, and returns scores for every document.</p>
 <span>  annotations_cache <span class="op">=</span> <span class="st">"textscale_annotations.rds"</span>,</span>
 <span>  annotations_path <span class="op">=</span> <span class="st">"textscale_annotations.json"</span>,</span>
 <span>  parallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  allow_ties <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"ridge"</span>,</span>
 <span>  ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  ci_method <span class="op">=</span> <span class="st">"laplace"</span>,</span>
@@ -154,6 +155,14 @@ Set to <code>NULL</code> to disable checkpointing. Ignored when
 submitted via the OpenAI Batch API at 50% of standard prices.
 Set to <code>TRUE</code> to use <code><a href="https://ellmer.tidyverse.org/reference/parallel_chat.html" class="external-link">ellmer::parallel_chat_text()</a></code> for immediate
 results at standard prices.</p></dd>
+
+
+<dt id="arg-allow-ties">allow_ties<a class="anchor" aria-label="anchor" href="#arg-allow-ties"></a></dt>
+<dd><p>Logical. If <code>TRUE</code> (the default), the LLM may
+respond with <code>"tie"</code> when the two texts are indistinguishable.
+Ties are automatically dropped before model fitting and
+validation. Set to <code>FALSE</code> to force a choice between A and B.
+Passed to <code><a href="annotate_comparisons.html">annotate_comparisons()</a></code>.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>

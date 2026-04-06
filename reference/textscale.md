@@ -22,6 +22,7 @@ textscale(
   annotations_cache = "textscale_annotations.rds",
   annotations_path = "textscale_annotations.json",
   parallel = FALSE,
+  allow_ties = TRUE,
   method = "ridge",
   ci = TRUE,
   ci_method = "laplace",
@@ -111,6 +112,14 @@ textscale(
   OpenAI Batch API at 50% of standard prices. Set to `TRUE` to use
   [`ellmer::parallel_chat_text()`](https://ellmer.tidyverse.org/reference/parallel_chat.html)
   for immediate results at standard prices.
+
+- allow_ties:
+
+  Logical. If `TRUE` (the default), the LLM may respond with `"tie"`
+  when the two texts are indistinguishable. Ties are automatically
+  dropped before model fitting and validation. Set to `FALSE` to force a
+  choice between A and B. Passed to
+  [`annotate_comparisons()`](https://joeornstein.github.io/textscale/reference/annotate_comparisons.md).
 
 - method:
 

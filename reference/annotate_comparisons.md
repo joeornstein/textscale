@@ -1,20 +1,18 @@
 # Annotate pairwise comparisons using an LLM
 
 Submits each comparison pair to an LLM and records which document "wins"
-on the latent dimension of interest. The `prompt` is interpolated for
-each row using
-[`ellmer::interpolate()`](https://ellmer.tidyverse.org/reference/interpolate.html),
-so it may reference any column in `comparisons` with `{{column_name}}`
-syntax. Most prompts will use `{{text_a}}` and `{{text_b}}`.
+on the latent dimension of interest.
 
 ## Usage
 
 ``` r
 annotate_comparisons(
   comparisons,
-  prompt,
+  instructions = NULL,
+  prompt = "A: {{text_a}}\nB: {{text_b}}",
   model = "gpt-4.1-mini",
-  system_prompt = "Respond with a single letter ('A' or 'B') only. No ties allowed.",
+  system_prompt = NULL,
+  allow_ties = TRUE,
   path = "textscale_annotations.json",
   parallel = FALSE,
   cache = NULL,
@@ -29,13 +27,21 @@ annotate_comparisons(
   A tibble produced by
   [`generate_comparisons()`](https://joeornstein.github.io/textscale/reference/generate_comparisons.md).
 
+- instructions:
+
+  A plain-language description of the comparison task (e.g.,
+  `"Which text is more conservative?"`). Prepended to `system_prompt` so
+  the LLM knows what to judge. When using `annotate_comparisons()` on
+  its own, this is typically the only argument you need beyond
+  `comparisons`.
+
 - prompt:
 
   An
   [`ellmer::interpolate()`](https://ellmer.tidyverse.org/reference/interpolate.html)
-  template string. Use `{{text_a}}` and `{{text_b}}` to reference the
-  two documents being compared. Example:
-  `"Which is heavier?\\nA: {{text_a}}\\nB: {{text_b}}"`.
+  template string for formatting each document pair. Defaults to
+  `"A: {{text_a}}\\nB: {{text_b}}"`. Override this only if you need a
+  non-standard document layout.
 
 - model:
 
@@ -44,8 +50,21 @@ annotate_comparisons(
 
 - system_prompt:
 
-  System prompt sent to the LLM. Defaults to instructing the model to
-  respond with a single letter.
+  System prompt sent to the LLM. When `NULL` (the default), an
+  appropriate prompt is generated based on the `allow_ties` argument.
+  Supply a custom value to override this behaviour entirely. When
+  `instructions` is supplied, it is prepended to `system_prompt`.
+
+- allow_ties:
+
+  Logical. If `TRUE` (the default), the LLM may respond with `"tie"`
+  when the two texts are indistinguishable on the dimension of interest.
+  Ties are recorded in the `winner` column and automatically dropped by
+  downstream functions
+  ([`fit_model()`](https://joeornstein.github.io/textscale/reference/fit_model.md),
+  [`validate_model()`](https://joeornstein.github.io/textscale/reference/validate_model.md)).
+  If `FALSE`, the system prompt instructs the LLM to choose A or B with
+  no ties allowed. Ignored when a custom `system_prompt` is supplied.
 
 - path:
 
@@ -84,9 +103,21 @@ annotate_comparisons(
 ## Value
 
 The input `comparisons` tibble with an additional `winner` column
-containing `"A"` or `"B"` for each pair.
+containing `"A"`, `"B"`, or (when `allow_ties = TRUE`) `"tie"` for each
+pair.
 
 ## Details
+
+The simplest way to use this function is to supply `instructions`
+describing the comparison task in plain language (e.g.,
+`"Which text is more conservative?"`). The instructions are
+automatically prepended to the system prompt, and each LLM turn contains
+the two documents formatted as `"A: <text_a>\\nB: <text_b>"`.
+
+For advanced use, the `prompt` argument is an
+[`ellmer::interpolate()`](https://ellmer.tidyverse.org/reference/interpolate.html)
+template string that may reference any column in `comparisons` with
+`{{column_name}}` syntax (most commonly `{{text_a}}` and `{{text_b}}`).
 
 By default, annotations are submitted via the OpenAI Batch API
 ([`ellmer::batch_chat_text()`](https://ellmer.tidyverse.org/reference/batch_chat.html)),
