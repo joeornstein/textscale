@@ -56,6 +56,11 @@
 #'   [score_documents()]. Ignored when `ci = FALSE`.
 #' @param validate Logical. If `TRUE` (the default), [validate_model()]
 #'   is called on the held-out test split and its output is printed.
+#' @param allow_ties Logical. If `TRUE` (the default), the LLM may
+#'   respond with `"tie"` when the two texts are indistinguishable.
+#'   Ties are automatically dropped before model fitting and
+#'   validation. Set to `FALSE` to force a choice between A and B.
+#'   Passed to [annotate_comparisons()].
 #' @param force Logical. If `FALSE` (the default), the pipeline stops
 #'   when validation metrics are poor (accuracy < 0.55 or ICI > 0.20)
 #'   and warns when they are marginal (accuracy < 0.65 or ICI > 0.10).
@@ -98,6 +103,7 @@ textscale <- function(
     annotations_cache = "textscale_annotations.rds",
     annotations_path = "textscale_annotations.json",
     parallel = FALSE,
+    allow_ties = TRUE,
     method = "ridge",
     ci = TRUE,
     ci_method = "laplace",
@@ -127,6 +133,7 @@ textscale <- function(
     comparisons,
     instructions  = prompt,
     model         = llm_model,
+    allow_ties    = allow_ties,
     cache         = annotations_cache,
     path          = annotations_path,
     parallel      = parallel
@@ -181,6 +188,16 @@ print.textscale_result <- function(x, ...) {
   n <- if (is.data.frame(x$scores)) nrow(x$scores) else length(x$scores)
   cat("textscale result\n")
   cat(sprintf("  Documents scored:  %s\n", format(n, big.mark = ",")))
+  n_comparisons <- nrow(x$comparisons)
+  n_ties <- sum(x$comparisons$winner == "tie", na.rm = TRUE)
+  if (n_ties > 0) {
+    cat(sprintf(
+      "  Comparisons:       %s (%s ties, %.1f%%)\n",
+      format(n_comparisons, big.mark = ","),
+      format(n_ties, big.mark = ","),
+      100 * n_ties / n_comparisons
+    ))
+  }
   if (!is.null(x$validation)) {
     m <- x$validation$metrics
     cat(sprintf(

@@ -1,5 +1,7 @@
 # textscale (development)
 
+* `annotate_comparisons()` gains an `allow_ties` argument (default `TRUE`). When enabled, the LLM may respond with `"tie"` for pairs that are indistinguishable on the dimension of interest. Ties are recorded in the `winner` column and automatically dropped by `fit_model()`, `validate_model()`, and the bootstrap path in `score_documents()`. Set `allow_ties = FALSE` to restore the previous forced-choice behaviour. `textscale()` passes this argument through via its own new `allow_ties` parameter.
+
 * `annotate_comparisons()` gains an `instructions` argument for describing the
   comparison task in plain language (e.g., `"Which text is more conservative?"`).
   Instructions are prepended to the system prompt automatically, and `prompt`

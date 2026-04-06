@@ -91,9 +91,11 @@
 #'   a non-standard document layout.
 #' @param model Character string naming the OpenAI model to use.
 #'   Defaults to `"gpt-4.1-mini"`.
-#' @param system_prompt System prompt sent to the LLM. Defaults to
-#'   instructing the model to respond with a single letter. When
-#'   `instructions` is supplied, it is prepended to this value.
+#' @param system_prompt System prompt sent to the LLM. When `NULL`
+#'   (the default), an appropriate prompt is generated based on the
+#'   `allow_ties` argument. Supply a custom value to override this
+#'   behaviour entirely. When `instructions` is supplied, it is
+#'   prepended to `system_prompt`.
 #' @param path File path for checkpointing batch API calls (passed to
 #'   [ellmer::batch_chat_text()]). Defaults to
 #'   `"textscale_annotations.json"` in the current working directory.
@@ -116,8 +118,17 @@
 #' @param ... Additional arguments passed to
 #'   [ellmer::batch_chat_text()] or [ellmer::parallel_chat_text()].
 #'
+#' @param allow_ties Logical. If `TRUE` (the default), the LLM may
+#'   respond with `"tie"` when the two texts are indistinguishable on
+#'   the dimension of interest. Ties are recorded in the `winner`
+#'   column and automatically dropped by downstream functions
+#'   ([fit_model()], [validate_model()]). If `FALSE`, the system
+#'   prompt instructs the LLM to choose A or B with no ties allowed.
+#'   Ignored when a custom `system_prompt` is supplied.
+#'
 #' @return The input `comparisons` tibble with an additional `winner`
-#'   column containing `"A"` or `"B"` for each pair.
+#'   column containing `"A"`, `"B"`, or (when `allow_ties = TRUE`)
+#'   `"tie"` for each pair.
 #'
 #' @export
 annotate_comparisons <- function(
@@ -125,11 +136,20 @@ annotate_comparisons <- function(
     instructions = NULL,
     prompt = "A: {{text_a}}\nB: {{text_b}}",
     model = "gpt-4.1-mini",
-    system_prompt = "Respond with a single letter ('A' or 'B') only. No ties allowed.",
+    system_prompt = NULL,
+    allow_ties = TRUE,
     path = "textscale_annotations.json",
     parallel = FALSE,
     cache = NULL,
     ...) {
+
+  if (is.null(system_prompt)) {
+    system_prompt <- if (allow_ties) {
+      "Respond with 'A', 'B', or 'tie'. Use 'tie' only when the two texts are genuinely indistinguishable on the dimension of interest."
+    } else {
+      "Respond with a single letter ('A' or 'B') only. No ties allowed."
+    }
+  }
 
   if (!is.null(instructions)) {
     system_prompt <- paste0(instructions, "\n", system_prompt)
@@ -189,7 +209,22 @@ annotate_comparisons <- function(
     .batch_chat_text(chat, prompts, path = path, ...)
   }
 
-  comparisons$winner[needs_annotation] <- trimws(responses)
+  cleaned <- trimws(responses)
+  # Normalise common tie variants
+  cleaned <- ifelse(tolower(cleaned) == "tie", "tie", cleaned)
+  valid_values <- if (allow_ties) c("A", "B", "tie") else c("A", "B")
+  bad <- !cleaned %in% valid_values
+  if (any(bad)) {
+    n_bad <- sum(bad)
+    examples <- unique(cleaned[bad])
+    if (length(examples) > 5) examples <- c(examples[1:5], "...")
+    warning(
+      n_bad, " response(s) were not among {",
+      paste(valid_values, collapse = ", "), "}: ",
+      paste(examples, collapse = ", "), ". These will appear as-is in the `winner` column."
+    )
+  }
+  comparisons$winner[needs_annotation] <- cleaned
 
   if (!is.null(cache)) {
     attr(comparisons, "prompt_hash") <- hash

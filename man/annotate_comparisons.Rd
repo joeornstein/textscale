@@ -6,9 +6,11 @@
 \usage{
 annotate_comparisons(
   comparisons,
-  prompt,
+  instructions = NULL,
+  prompt = "A: {{text_a}}\\nB: {{text_b}}",
   model = "gpt-4.1-mini",
-  system_prompt = "Respond with a single letter ('A' or 'B') only. No ties allowed.",
+  system_prompt = NULL,
+  allow_ties = TRUE,
   path = "textscale_annotations.json",
   parallel = FALSE,
   cache = NULL,
@@ -19,15 +21,33 @@ annotate_comparisons(
 \item{comparisons}{A tibble produced by
 \code{\link[=generate_comparisons]{generate_comparisons()}}.}
 
-\item{prompt}{An \code{\link[ellmer:interpolate]{ellmer::interpolate()}} template string. Use
-\code{{{text_a}}} and \code{{{text_b}}} to reference the two documents being
-compared. Example: \code{"Which is heavier?\\\\nA: {{text_a}}\\\\nB: {{text_b}}"}.}
+\item{instructions}{A plain-language description of the comparison
+task (e.g., \code{"Which text is more conservative?"}). Prepended to
+\code{system_prompt} so the LLM knows what to judge. When using
+\code{annotate_comparisons()} on its own, this is typically the only
+argument you need beyond \code{comparisons}.}
+
+\item{prompt}{An \code{\link[ellmer:interpolate]{ellmer::interpolate()}} template string for
+formatting each document pair. Defaults to
+\code{"A: {{text_a}}\\\\nB: {{text_b}}"}. Override this only if you need
+a non-standard document layout.}
 
 \item{model}{Character string naming the OpenAI model to use.
 Defaults to \code{"gpt-4.1-mini"}.}
 
-\item{system_prompt}{System prompt sent to the LLM. Defaults to
-instructing the model to respond with a single letter.}
+\item{system_prompt}{System prompt sent to the LLM. When \code{NULL}
+(the default), an appropriate prompt is generated based on the
+\code{allow_ties} argument. Supply a custom value to override this
+behaviour entirely. When \code{instructions} is supplied, it is
+prepended to \code{system_prompt}.}
+
+\item{allow_ties}{Logical. If \code{TRUE} (the default), the LLM may
+respond with \code{"tie"} when the two texts are indistinguishable on
+the dimension of interest. Ties are recorded in the \code{winner}
+column and automatically dropped by downstream functions
+(\code{\link[=fit_model]{fit_model()}}, \code{\link[=validate_model]{validate_model()}}). If \code{FALSE}, the system
+prompt instructs the LLM to choose A or B with no ties allowed.
+Ignored when a custom \code{system_prompt} is supplied.}
 
 \item{path}{File path for checkpointing batch API calls (passed to
 \code{\link[ellmer:batch_chat]{ellmer::batch_chat_text()}}). Defaults to
@@ -56,16 +76,26 @@ this check.}
 }
 \value{
 The input \code{comparisons} tibble with an additional \code{winner}
-column containing \code{"A"} or \code{"B"} for each pair.
+column containing \code{"A"}, \code{"B"}, or (when \code{allow_ties = TRUE})
+\code{"tie"} for each pair.
 }
 \description{
 Submits each comparison pair to an LLM and records which document
-"wins" on the latent dimension of interest. The \code{prompt} is
-interpolated for each row using \code{\link[ellmer:interpolate]{ellmer::interpolate()}}, so it may
-reference any column in \code{comparisons} with \code{{{column_name}}} syntax.
-Most prompts will use \code{{{text_a}}} and \code{{{text_b}}}.
+"wins" on the latent dimension of interest.
 }
 \details{
+The simplest way to use this function is to supply \code{instructions}
+describing the comparison task in plain language (e.g.,
+\code{"Which text is more conservative?"}). The instructions are
+automatically prepended to the system prompt, and each LLM turn
+contains the two documents formatted as
+\code{"A: <text_a>\\\\nB: <text_b>"}.
+
+For advanced use, the \code{prompt} argument is an
+\code{\link[ellmer:interpolate]{ellmer::interpolate()}} template string that may reference any
+column in \code{comparisons} with \code{{{column_name}}} syntax (most
+commonly \code{{{text_a}}} and \code{{{text_b}}}).
+
 By default, annotations are submitted via the OpenAI Batch API
 (\code{\link[ellmer:batch_chat]{ellmer::batch_chat_text()}}), which is 50\% cheaper than standard
 pricing but may take up to 24 hours to complete. The \code{path} argument

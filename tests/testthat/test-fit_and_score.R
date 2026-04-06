@@ -144,6 +144,52 @@ test_that("bootstrap CI errors without comparisons", {
   )
 })
 
+# --- Ties --------------------------------------------------------------------
+
+# Create comparisons with some ties mixed in
+comparisons_with_ties <- comparisons
+tie_idx <- sample(nrow(comparisons_with_ties), 10)
+comparisons_with_ties$winner[tie_idx] <- "tie"
+
+test_that("fit_model drops ties and still fits", {
+  expect_message(
+    model_ties <- fit_model(comparisons_with_ties, emb),
+    "Dropping 10 tie"
+  )
+  expect_s3_class(model_ties, "textscale_model")
+  expect_length(model_ties$beta, n_dims)
+})
+
+test_that("scores from model with ties correlate with true scores", {
+  model_ties <- suppressMessages(fit_model(comparisons_with_ties, emb))
+  scores <- score_documents(model_ties, emb)
+  expect_gt(abs(cor(scores, true_scores)), 0.90)
+})
+
+test_that("validate_model drops ties", {
+  # Add a split column so validation uses "test" rows
+  comp_split <- comparisons_with_ties
+  comp_split$split <- sample(c("train", "test"), nrow(comp_split), replace = TRUE, prob = c(0.8, 0.2))
+  model_split <- suppressMessages(fit_model(comp_split, emb))
+  n_test_ties <- sum(comp_split$split == "test" & comp_split$winner == "tie")
+
+  if (n_test_ties > 0) {
+    expect_message(
+      suppressWarnings(validate_model(model_split, comp_split, emb, force = TRUE)),
+      "Dropping.*tie"
+    )
+  }
+})
+
+test_that("bootstrap CIs work with ties in comparisons", {
+  result <- suppressMessages(
+    score_documents(model, emb, ci = TRUE, ci_method = "bootstrap",
+                    n_boot = 10, comparisons = comparisons_with_ties)
+  )
+  expect_s3_class(result, "tbl_df")
+  expect_named(result, c("score", "lower", "upper"))
+})
+
 # --- method argument ----------------------------------------------------------
 
 test_that("fit_model errors on invalid method", {

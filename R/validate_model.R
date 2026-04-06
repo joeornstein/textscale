@@ -46,6 +46,17 @@ validate_model <- function(model, comparisons, embeddings, force = FALSE) {
     comparisons <- comparisons[comparisons$split == "test", ]
   }
 
+  # Drop ties (cannot be evaluated in a binary prediction framework)
+  is_tie <- comparisons$winner == "tie"
+  if (any(is_tie, na.rm = TRUE)) {
+    n_ties <- sum(is_tie, na.rm = TRUE)
+    message(glue::glue(
+      "Dropping {format(n_ties, big.mark = ',')} tie(s) from ",
+      "{format(nrow(comparisons), big.mark = ',')} test comparisons."
+    ))
+    comparisons <- comparisons[!is_tie | is.na(is_tie), ]
+  }
+
   scores     <- score_documents(model, embeddings)
   score_diff <- scores[comparisons$doc_id_a] - scores[comparisons$doc_id_b]
   prob       <- plogis(score_diff)

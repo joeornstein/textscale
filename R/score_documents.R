@@ -90,6 +90,12 @@ score_documents <- function(
     comparisons <- comparisons[comparisons$split == "train", ]
   }
 
+  # Drop ties before resampling
+  is_tie <- comparisons$winner == "tie"
+  if (any(is_tie, na.rm = TRUE)) {
+    comparisons <- comparisons[!is_tie | is.na(is_tie), ]
+  }
+
   alpha_val <- switch(model$method, ridge = 0, lasso = 1, enet = 0.5, NULL)
   n_train   <- nrow(comparisons)
   boot_mat  <- matrix(NA_real_, nrow = nrow(embeddings), ncol = n_boot)

@@ -68,6 +68,17 @@ fit_model <- function(
     comparisons <- comparisons[comparisons$split == "train", ]
   }
 
+  # Drop ties (uninformative for binary logistic regression / SVM)
+  is_tie <- comparisons$winner == "tie"
+  if (any(is_tie, na.rm = TRUE)) {
+    n_ties <- sum(is_tie, na.rm = TRUE)
+    message(glue::glue(
+      "Dropping {format(n_ties, big.mark = ',')} tie(s) from ",
+      "{format(nrow(comparisons), big.mark = ',')} comparisons."
+    ))
+    comparisons <- comparisons[!is_tie | is.na(is_tie), ]
+  }
+
   n_pairs  <- nrow(comparisons)
   n_dims   <- ncol(embeddings)
   pair_lbl <- format(n_pairs, big.mark = ",")

@@ -18,6 +18,7 @@ textscale(
   annotations_cache = "textscale_annotations.rds",
   annotations_path = "textscale_annotations.json",
   parallel = FALSE,
+  allow_ties = TRUE,
   method = "ridge",
   ci = TRUE,
   ci_method = "laplace",
@@ -79,6 +80,12 @@ Set to \code{NULL} to disable checkpointing. Ignored when
 submitted via the OpenAI Batch API at 50\% of standard prices.
 Set to \code{TRUE} to use \code{\link[ellmer:parallel_chat]{ellmer::parallel_chat_text()}} for immediate
 results at standard prices.}
+
+\item{allow_ties}{Logical. If \code{TRUE} (the default), the LLM may
+respond with \code{"tie"} when the two texts are indistinguishable.
+Ties are automatically dropped before model fitting and
+validation. Set to \code{FALSE} to force a choice between A and B.
+Passed to \code{\link[=annotate_comparisons]{annotate_comparisons()}}.}
 
 \item{method}{Fitting method passed to \code{\link[=fit_model]{fit_model()}}. One of
 \code{"ridge"} (default), \code{"lasso"}, \code{"enet"}, or \code{"svm"}.}
