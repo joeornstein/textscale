@@ -14,6 +14,8 @@
 # Batch API is 50% cheaper. Update as prices change.
 .model_prices <- list(
   "gpt-5.4"      = c(input = 2.50, output = 15.00),
+  "gpt-5.4-mini" = c(input = 0.75, output =  4.50),
+  "gpt-5.4-nano" = c(input = 0.20, output =  1.25),
   "gpt-5.2"      = c(input = 1.75, output = 14.00),
   "gpt-5"        = c(input = 1.25, output = 10.00),
   "gpt-5-mini"   = c(input = 0.25, output =  2.00),
@@ -90,7 +92,7 @@
 #'   `"A: {{text_a}}\\nB: {{text_b}}"`. Override this only if you need
 #'   a non-standard document layout.
 #' @param model Character string naming the OpenAI model to use.
-#'   Defaults to `"gpt-4.1-mini"`.
+#'   Defaults to `"gpt-5.4-mini"`.
 #' @param system_prompt System prompt sent to the LLM. When `NULL`
 #'   (the default), an appropriate prompt is generated based on the
 #'   `allow_ties` argument. Supply a custom value to override this
@@ -135,7 +137,7 @@ annotate_comparisons <- function(
     comparisons,
     instructions = NULL,
     prompt = "A: {{text_a}}\nB: {{text_b}}",
-    model = "gpt-4.1-mini",
+    model = "gpt-5.4-mini",
     system_prompt = NULL,
     allow_ties = TRUE,
     path = "textscale_annotations.json",
@@ -145,7 +147,7 @@ annotate_comparisons <- function(
 
   if (is.null(system_prompt)) {
     system_prompt <- if (allow_ties) {
-      "Respond with 'A', 'B', or 'tie'. Use 'tie' only when the two texts are genuinely indistinguishable on the dimension of interest."
+      "Respond with 'A', 'B', or 'tie'."
     } else {
       "Respond with a single letter ('A' or 'B') only. No ties allowed."
     }

@@ -1,5 +1,18 @@
 # textscale (development)
 
+* Default annotator model changed from `gpt-4.1-mini` to `gpt-5.4-mini` in
+  `textscale()` and `annotate_comparisons()`.
+
+* Added `gpt-5.4-mini` and `gpt-5.4-nano` to the built-in cost-estimate
+  pricing table.
+
+* Softened the default system prompt for tie-allowed annotations. The previous
+  wording ("genuinely indistinguishable") discouraged ties too aggressively;
+  the prompt now presents "tie" as a neutral option alongside "A" and "B".
+
+* Fixed `print.textscale_validation()` to handle validation objects created
+  before the `n_ties_dropped` field was added.
+
 * `annotate_comparisons()` now reports a summary after annotation completes,
   including the total number of annotations and the number/percentage of ties
   (when any are present). Tie-dropping messages have been removed from

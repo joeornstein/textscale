@@ -28,7 +28,7 @@
 #' @param seed Integer random seed for reproducible pair sampling.
 #'   Defaults to `NULL`.
 #' @param llm_model OpenAI model name used for annotation. Defaults to
-#'   `"gpt-4.1-mini"`.
+#'   `"gpt-5.4-mini"`.
 #' @param embeddings_cache File path for caching embeddings as an RDS
 #'   file. Passed to [get_embeddings()]. Defaults to
 #'   `"textscale_embeddings.rds"` in the current working directory.
@@ -98,7 +98,7 @@ textscale <- function(
     n_train = 10000,
     n_test = 5000,
     seed = NULL,
-    llm_model = "gpt-4.1-mini",
+    llm_model = "gpt-5.4-mini",
     embeddings_cache = "textscale_embeddings.rds",
     annotations_cache = "textscale_annotations.rds",
     annotations_path = "textscale_annotations.json",

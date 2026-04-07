@@ -8,7 +8,7 @@ annotate_comparisons(
   comparisons,
   instructions = NULL,
   prompt = "A: {{text_a}}\\nB: {{text_b}}",
-  model = "gpt-4.1-mini",
+  model = "gpt-5.4-mini",
   system_prompt = NULL,
   allow_ties = TRUE,
   path = "textscale_annotations.json",
@@ -33,7 +33,7 @@ formatting each document pair. Defaults to
 a non-standard document layout.}
 
 \item{model}{Character string naming the OpenAI model to use.
-Defaults to \code{"gpt-4.1-mini"}.}
+Defaults to \code{"gpt-5.4-mini"}.}
 
 \item{system_prompt}{System prompt sent to the LLM. When \code{NULL}
 (the default), an appropriate prompt is generated based on the

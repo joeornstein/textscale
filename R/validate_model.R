@@ -91,10 +91,11 @@ validate_model <- function(model, comparisons, embeddings, force = FALSE) {
 #' @export
 print.textscale_validation <- function(x, ...) {
   cat("textscale model validation\n")
-  if (x$n_ties_dropped > 0) {
+  n_ties_dropped <- x$n_ties_dropped %||% 0L
+  if (n_ties_dropped > 0) {
     cat(sprintf(
       "(%s tie(s) excluded from evaluation)\n",
-      format(x$n_ties_dropped, big.mark = ",")
+      format(n_ties_dropped, big.mark = ",")
     ))
   }
   cat("\n")
