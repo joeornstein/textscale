@@ -17,7 +17,7 @@ textscale(
   n_train = 10000,
   n_test = 5000,
   seed = NULL,
-  llm_model = "gpt-4.1-mini",
+  llm_model = "gpt-5.4-mini",
   embeddings_cache = "textscale_embeddings.rds",
   annotations_cache = "textscale_annotations.rds",
   annotations_path = "textscale_annotations.json",
@@ -82,7 +82,7 @@ textscale(
 
 - llm_model:
 
-  OpenAI model name used for annotation. Defaults to `"gpt-4.1-mini"`.
+  OpenAI model name used for annotation. Defaults to `"gpt-5.4-mini"`.
 
 - embeddings_cache:
 

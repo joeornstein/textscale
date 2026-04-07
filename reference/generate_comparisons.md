@@ -91,31 +91,31 @@ docs <- c("The quick brown fox", "A lazy dog", "Hello world", "Foo bar")
 # All unique pairs
 generate_comparisons(docs, n_train = NULL)
 #> # A tibble: 6 × 4
-#>   doc_id_a doc_id_b text_a              text_b     
-#>      <int>    <int> <chr>               <chr>      
-#> 1        1        2 The quick brown fox A lazy dog 
-#> 2        1        3 The quick brown fox Hello world
-#> 3        2        3 A lazy dog          Hello world
-#> 4        1        4 The quick brown fox Foo bar    
-#> 5        2        4 A lazy dog          Foo bar    
-#> 6        3        4 Hello world         Foo bar    
+#>   doc_id_a doc_id_b text_a              text_b             
+#>      <int>    <int> <chr>               <chr>              
+#> 1        1        2 The quick brown fox A lazy dog         
+#> 2        3        1 Hello world         The quick brown fox
+#> 3        3        2 Hello world         A lazy dog         
+#> 4        1        4 The quick brown fox Foo bar            
+#> 5        2        4 A lazy dog          Foo bar            
+#> 6        3        4 Hello world         Foo bar            
 # With an 80/20 train/test split, default sample sizes
 generate_comparisons(docs, prop = 0.8, seed = 1)
 #> `n_train` (10000) exceeds the number of unique train pairs (3). Using all 3.
 #> `n_test` (5000) exceeds the number of unique test pairs (0). Using all 0.
 #> # A tibble: 3 × 5
-#>   doc_id_a doc_id_b text_a              text_b      split
-#>      <int>    <int> <chr>               <chr>       <chr>
-#> 1        1        3 The quick brown fox Hello world train
-#> 2        1        4 The quick brown fox Foo bar     train
-#> 3        3        4 Hello world         Foo bar     train
+#>   doc_id_a doc_id_b text_a              text_b              split
+#>      <int>    <int> <chr>               <chr>               <chr>
+#> 1        1        3 The quick brown fox Hello world         train
+#> 2        4        1 Foo bar             The quick brown fox train
+#> 3        4        3 Foo bar             Hello world         train
 # With blocks
 generate_comparisons(docs, blocks = c("a", "a", "b", "b"), n_train = NULL)
 #> # A tibble: 2 × 5
-#>   doc_id_a doc_id_b text_a              text_b     block
-#>      <int>    <int> <chr>               <chr>      <chr>
-#> 1        1        2 The quick brown fox A lazy dog a    
-#> 2        3        4 Hello world         Foo bar    b    
+#>   doc_id_a doc_id_b text_a     text_b              block
+#>      <int>    <int> <chr>      <chr>               <chr>
+#> 1        2        1 A lazy dog The quick brown fox a    
+#> 2        4        3 Foo bar    Hello world         b    
 # With user-supplied holdout
 generate_comparisons(docs, holdout = c(FALSE, FALSE, TRUE, TRUE))
 #> `n_train` (10000) exceeds the number of unique train pairs (1). Using all 1.

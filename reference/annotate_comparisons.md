@@ -10,7 +10,7 @@ annotate_comparisons(
   comparisons,
   instructions = NULL,
   prompt = "A: {{text_a}}\nB: {{text_b}}",
-  model = "gpt-4.1-mini",
+  model = "gpt-5.4-mini",
   system_prompt = NULL,
   allow_ties = TRUE,
   path = "textscale_annotations.json",
@@ -46,7 +46,7 @@ annotate_comparisons(
 - model:
 
   Character string naming the OpenAI model to use. Defaults to
-  `"gpt-4.1-mini"`.
+  `"gpt-5.4-mini"`.
 
 - system_prompt:
 
