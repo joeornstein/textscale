@@ -1,5 +1,14 @@
 # textscale (development)
 
+* `annotate_comparisons()` now reports a summary after annotation completes,
+  including the total number of annotations and the number/percentage of ties
+  (when any are present). Tie-dropping messages have been removed from
+  `fit_model()` and `validate_model()`; tie counts are instead surfaced in
+  `print.textscale_validation()` and the calibration plot caption.
+
+* Fixed a test that incorrectly assumed `doc_id_a < doc_id_b`, which has not
+  held since the A/B randomization fix in the previous version.
+
 * `annotate_comparisons()` gains an `allow_ties` argument (default `TRUE`). When enabled, the LLM may respond with `"tie"` for pairs that are indistinguishable on the dimension of interest. Ties are recorded in the `winner` column and automatically dropped by `fit_model()`, `validate_model()`, and the bootstrap path in `score_documents()`. Set `allow_ties = FALSE` to restore the previous forced-choice behaviour. `textscale()` passes this argument through via its own new `allow_ties` parameter.
 
 * `annotate_comparisons()` gains an `instructions` argument for describing the

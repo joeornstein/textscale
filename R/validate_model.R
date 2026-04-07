@@ -48,12 +48,8 @@ validate_model <- function(model, comparisons, embeddings, force = FALSE) {
 
   # Drop ties (cannot be evaluated in a binary prediction framework)
   is_tie <- comparisons$winner == "tie"
-  if (any(is_tie, na.rm = TRUE)) {
-    n_ties <- sum(is_tie, na.rm = TRUE)
-    message(glue::glue(
-      "Dropping {format(n_ties, big.mark = ',')} tie(s) from ",
-      "{format(nrow(comparisons), big.mark = ',')} test comparisons."
-    ))
+  n_ties_dropped <- sum(is_tie, na.rm = TRUE)
+  if (n_ties_dropped > 0) {
     comparisons <- comparisons[!is_tie | is.na(is_tie), ]
   }
 
@@ -82,7 +78,8 @@ validate_model <- function(model, comparisons, embeddings, force = FALSE) {
   )
 
   out <- structure(
-    list(metrics = metrics, cal_df = cal_df, ici = ici),
+    list(metrics = metrics, cal_df = cal_df, ici = ici,
+         n_ties_dropped = n_ties_dropped),
     class = "textscale_validation"
   )
 
@@ -93,7 +90,14 @@ validate_model <- function(model, comparisons, embeddings, force = FALSE) {
 
 #' @export
 print.textscale_validation <- function(x, ...) {
-  cat("textscale model validation\n\n")
+  cat("textscale model validation\n")
+  if (x$n_ties_dropped > 0) {
+    cat(sprintf(
+      "(%s tie(s) excluded from evaluation)\n",
+      format(x$n_ties_dropped, big.mark = ",")
+    ))
+  }
+  cat("\n")
   print(x$metrics)
   invisible(x)
 }
@@ -108,8 +112,9 @@ print.textscale_validation <- function(x, ...) {
 #'
 #' @export
 plot.textscale_validation <- function(x, bins = 10, ...) {
-  cal_df <- x$cal_df
-  ici    <- x$ici
+  cal_df         <- x$cal_df
+  ici            <- x$ici
+  n_ties_dropped <- x$n_ties_dropped %||% 0L
 
   # Bin observed proportions for reliability diagram points
   breaks <- seq(0, 1, length.out = bins + 1)
@@ -153,7 +158,12 @@ plot.textscale_validation <- function(x, bins = 10, ...) {
       title   = "Calibration plot",
       x       = "Predicted P(A wins)",
       y       = "Observed P(A wins)",
-      caption = paste0("ICI = ", round(ici, 3))
+      caption = if (n_ties_dropped > 0) {
+        paste0("ICI = ", round(ici, 3),
+               " (", format(n_ties_dropped, big.mark = ","), " tie(s) excluded)")
+      } else {
+        paste0("ICI = ", round(ici, 3))
+      }
     ) +
     ggplot2::theme_minimal()
 

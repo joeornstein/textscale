@@ -226,6 +226,21 @@ annotate_comparisons <- function(
   }
   comparisons$winner[needs_annotation] <- cleaned
 
+  # Summarise completed annotations (including any cached winners)
+  n_total <- nrow(comparisons)
+  n_ties  <- sum(comparisons$winner == "tie", na.rm = TRUE)
+  if (n_ties > 0) {
+    message(glue::glue(
+      "{format(n_total, big.mark = ',')} annotations completed ",
+      "({format(n_ties, big.mark = ',')} ties, ",
+      "{sprintf('%.1f', 100 * n_ties / n_total)}%)."
+    ))
+  } else {
+    message(glue::glue(
+      "{format(n_total, big.mark = ',')} annotations completed."
+    ))
+  }
+
   if (!is.null(cache)) {
     attr(comparisons, "prompt_hash") <- hash
     .ensure_dir(cache)

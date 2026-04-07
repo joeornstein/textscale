@@ -40,6 +40,32 @@ test_that("allow_ties = TRUE preserves tie responses", {
   expect_equal(result$winner, c("A", "tie", "B"))
 })
 
+test_that("annotation summary reports total and tie count", {
+  local_mocked_bindings(
+    .chat_openai = function(...) NULL,
+    .parallel_chat_text = function(chat, prompts, ...) c("A", "tie", "B")
+  )
+
+  expect_message(
+    annotate_comparisons(comparisons, instructions = "?",
+                         allow_ties = TRUE, parallel = TRUE),
+    "3 annotations completed.*1 ties"
+  )
+})
+
+test_that("annotation summary omits tie count when none", {
+  local_mocked_bindings(
+    .chat_openai = function(...) NULL,
+    .parallel_chat_text = function(chat, prompts, ...) c("A", "B", "A")
+  )
+
+  expect_message(
+    annotate_comparisons(comparisons, instructions = "?",
+                         allow_ties = TRUE, parallel = TRUE),
+    "3 annotations completed\\."
+  )
+})
+
 test_that("allow_ties = FALSE warns on tie responses", {
   local_mocked_bindings(
     .chat_openai = function(...) NULL,

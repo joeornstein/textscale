@@ -21,9 +21,9 @@ test_that("doc ids are within range", {
   expect_true(all(out$doc_id_b >= 1 & out$doc_id_b <= length(docs)))
 })
 
-test_that("doc_id_a is always less than doc_id_b (no reversed pairs)", {
+test_that("doc_id_a and doc_id_b are never equal (no self-pairs)", {
   out <- generate_comparisons(docs)
-  expect_true(all(out$doc_id_a < out$doc_id_b))
+  expect_true(all(out$doc_id_a != out$doc_id_b))
 })
 
 test_that("no duplicate pairs are returned", {

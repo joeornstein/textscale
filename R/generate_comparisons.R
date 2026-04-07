@@ -263,6 +263,13 @@ generate_comparisons <- function(documents,
     ids_b  <- c(tr$b, te$b)
     splits <- c(rep("train", length(tr$a)), rep("test", length(te$a)))
 
+    # Randomize A/B slot assignment to prevent systematic ordering bias
+    swap <- as.logical(stats::rbinom(length(ids_a), 1, 0.5))
+    tmp_a <- ifelse(swap, ids_b, ids_a)
+    tmp_b <- ifelse(swap, ids_a, ids_b)
+    ids_a <- tmp_a
+    ids_b <- tmp_b
+
     result <- tibble::tibble(
       doc_id_a = ids_a,
       doc_id_b = ids_b,
@@ -280,11 +287,21 @@ generate_comparisons <- function(documents,
     # --- No-split mode ---
     pairs <- build_pairs(seq_len(n_docs), blocks, n_train, "train")
 
+    ids_a <- pairs$a
+    ids_b <- pairs$b
+
+    # Randomize A/B slot assignment to prevent systematic ordering bias
+    swap <- as.logical(stats::rbinom(length(ids_a), 1, 0.5))
+    tmp_a <- ifelse(swap, ids_b, ids_a)
+    tmp_b <- ifelse(swap, ids_a, ids_b)
+    ids_a <- tmp_a
+    ids_b <- tmp_b
+
     result <- tibble::tibble(
-      doc_id_a = pairs$a,
-      doc_id_b = pairs$b,
-      text_a   = documents[pairs$a],
-      text_b   = documents[pairs$b]
+      doc_id_a = ids_a,
+      doc_id_b = ids_b,
+      text_a   = documents[ids_a],
+      text_b   = documents[ids_b]
     )
 
     if (!is.null(blocks)) {

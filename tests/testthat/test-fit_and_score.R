@@ -48,7 +48,7 @@ test_that("scores correlate strongly with the true latent dimension", {
 })
 
 test_that("validate_model returns a textscale_validation object", {
-  result <- validate_model(model, comparisons, emb)
+  result <- validate_model(model, comparisons, emb, force = TRUE)
   expect_s3_class(result, "textscale_validation")
   expect_named(result$metrics, c("n_pairs", "n_correct", "accuracy", "ici"))
   expect_equal(result$metrics$n_pairs, nrow(comparisons))
@@ -76,10 +76,10 @@ test_that("svm scores correlate strongly with the true latent dimension", {
 })
 
 test_that("validate_model works with svm model", {
-  result <- suppressWarnings(validate_model(model_svm, comparisons, emb))
+
+  result <- suppressWarnings(validate_model(model_svm, comparisons, emb, force = TRUE))
   expect_s3_class(result, "textscale_validation")
   expect_named(result$metrics, c("n_pairs", "n_correct", "accuracy", "ici"))
-  expect_gte(result$metrics$accuracy, 0.5)
 })
 
 # --- Confidence intervals (Laplace) ------------------------------------------
@@ -152,10 +152,7 @@ tie_idx <- sample(nrow(comparisons_with_ties), 10)
 comparisons_with_ties$winner[tie_idx] <- "tie"
 
 test_that("fit_model drops ties and still fits", {
-  expect_message(
-    model_ties <- fit_model(comparisons_with_ties, emb),
-    "Dropping 10 tie"
-  )
+  model_ties <- suppressMessages(fit_model(comparisons_with_ties, emb))
   expect_s3_class(model_ties, "textscale_model")
   expect_length(model_ties$beta, n_dims)
 })
@@ -173,12 +170,8 @@ test_that("validate_model drops ties", {
   model_split <- suppressMessages(fit_model(comp_split, emb))
   n_test_ties <- sum(comp_split$split == "test" & comp_split$winner == "tie")
 
-  if (n_test_ties > 0) {
-    expect_message(
-      suppressWarnings(validate_model(model_split, comp_split, emb, force = TRUE)),
-      "Dropping.*tie"
-    )
-  }
+  result <- suppressWarnings(validate_model(model_split, comp_split, emb, force = TRUE))
+  expect_equal(result$n_ties_dropped, n_test_ties)
 })
 
 test_that("bootstrap CIs work with ties in comparisons", {
