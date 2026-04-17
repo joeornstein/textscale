@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "stage": "waiting",
+  "batch": {
+    "id": "batch_69c53bacf58881908468d729a635e50e",
+    "object": "batch",
+    "endpoint": "/v1/responses",
+    "model": "gpt-4.1-mini-2025-04-14",
+    "errors": {},
+    "input_file_id": "file-K6pGSSEK8yMdim8jjav4sb",
+    "completion_window": "24h",
+    "status": "in_progress",
+    "output_file_id": {},
+    "error_file_id": {},
+    "created_at": 1774533548,
+    "in_progress_at": 1774533610,
+    "expires_at": 1774619948,
+    "finalizing_at": {},
+    "completed_at": {},
+    "failed_at": {},
+    "expired_at": {},
+    "cancelling_at": {},
+    "cancelled_at": {},
+    "request_counts": {
+      "total": 1,
+      "completed": 0,
+      "failed": 0
+    },
+    "usage": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "total_tokens": 0,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "metadata": {}
+  },
+  "results": {},
+  "started_at": 1774533547,
+  "hash": {
+    "provider": "8df775a88ce386209e35cef64efb8a9e",
+    "prompts": "af5985ce4516fcc8552afef274439048",
+    "user_turns": "39ab9f1d2b4e076b23b3005a6a018067"
+  }
+}
