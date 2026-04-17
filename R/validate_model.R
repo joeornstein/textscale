@@ -31,17 +31,24 @@ utils::globalVariables(c("prob", "result", "mean_pred", "obs_prop", "n"))
 #'   must correspond to document `i` in the original `documents` vector
 #'   passed to [textscale::generate_comparisons()].
 #' @param force Logical. If `FALSE` (the default), the function stops
-#'   when accuracy is below 0.55 or ICI exceeds 0.20, and warns when
-#'   accuracy is below 0.65 or ICI exceeds 0.10. Set `force = TRUE` to
-#'   downgrade stops to warnings and continue anyway. When calling via
+#'   when the upper bound of the 95% CI on accuracy falls below 0.55 or
+#'   ICI exceeds 0.20, and warns when the accuracy CI upper bound is
+#'   below 0.65 or ICI exceeds 0.10. Set `force = TRUE` to downgrade
+#'   stops to warnings and continue anyway. When calling via
 #'   [textscale()], pass `force = TRUE` there instead.
+#' @param min_test_pairs Integer. Minimum number of (non-tie) test pairs
+#'   required to fit the calibration smooth used to compute the ICI.
+#'   When fewer pairs are available, the GAM step is skipped, `ici` is
+#'   recorded as `NA`, and only accuracy (with its Agresti-Coull CI) is
+#'   reported. Defaults to `50`.
 #'
 #' @return A `textscale_validation` object. Call [print()] to display
 #'   the accuracy and ICI metrics; call [plot()] to display a calibration
 #'   plot and retrieve the underlying `ggplot` object.
 #'
 #' @export
-validate_model <- function(model, comparisons, embeddings, force = FALSE) {
+validate_model <- function(model, comparisons, embeddings, force = FALSE,
+                           min_test_pairs = 50L) {
   if ("split" %in% names(comparisons)) {
     comparisons <- comparisons[comparisons$split == "test", ]
   }
@@ -53,33 +60,56 @@ validate_model <- function(model, comparisons, embeddings, force = FALSE) {
     comparisons <- comparisons[!is_tie | is.na(is_tie), ]
   }
 
+  n_pairs <- nrow(comparisons)
+  if (n_pairs < 2) {
+    stop(
+      "Cannot validate: only ", n_pairs, " non-tie test pair(s) available. ",
+      "Supply more documents or disable validation (`validate = FALSE`).",
+      call. = FALSE
+    )
+  }
+
   scores     <- score_documents(model, embeddings)
   score_diff <- scores[comparisons$doc_id_a] - scores[comparisons$doc_id_b]
   prob       <- plogis(score_diff)
   predicted  <- ifelse(prob > 0.5, "A", "B")
 
   n_correct <- sum(predicted == comparisons$winner, na.rm = TRUE)
+  acc       <- n_correct / n_pairs
+  acc_ci    <- .agresti_coull_ci(n_correct, n_pairs)
+
+  cal_df <- data.frame(prob = prob,
+                       result = as.numeric(comparisons$winner == "A"))
 
   # Integrated Calibration Index: mean absolute deviation of the
-  # calibration smooth from the 45-degree line
-  cal_df  <- data.frame(prob = prob, result = as.numeric(comparisons$winner == "A"))
-  gam_fit <- mgcv::gam(result ~ s(prob, bs = "cs"), data = cal_df)
-  grid    <- seq(0.01, 0.99, by = 0.005)
-  fitted  <- as.numeric(predict(gam_fit, newdata = data.frame(prob = grid)))
-  ici     <- mean(abs(fitted - grid))
-
-  acc <- n_correct / nrow(comparisons)
+  # calibration smooth from the 45-degree line. Skipped when the test
+  # set is too small for the smooth to be reliable.
+  if (n_pairs >= min_test_pairs) {
+    gam_fit <- mgcv::gam(result ~ s(prob, bs = "cs"), data = cal_df)
+    grid    <- seq(0.01, 0.99, by = 0.005)
+    fitted  <- as.numeric(predict(gam_fit, newdata = data.frame(prob = grid)))
+    ici     <- mean(abs(fitted - grid))
+  } else {
+    ici <- NA_real_
+    message(sprintf(
+      "Only %d test pair(s); calibration (ICI) not assessed (needs >= %d).",
+      n_pairs, min_test_pairs
+    ))
+  }
 
   metrics <- tibble::tibble(
-    n_pairs   = nrow(comparisons),
-    n_correct = n_correct,
-    accuracy  = acc,
-    ici       = ici
+    n_pairs        = n_pairs,
+    n_correct      = n_correct,
+    accuracy       = acc,
+    accuracy_lower = unname(acc_ci["lower"]),
+    accuracy_upper = unname(acc_ci["upper"]),
+    ici            = ici
   )
 
   out <- structure(
     list(metrics = metrics, cal_df = cal_df, ici = ici,
-         n_ties_dropped = n_ties_dropped),
+         n_ties_dropped = n_ties_dropped,
+         min_test_pairs = min_test_pairs),
     class = "textscale_validation"
   )
 
@@ -100,6 +130,12 @@ print.textscale_validation <- function(x, ...) {
   }
   cat("\n")
   print(x$metrics)
+  if (is.na(x$metrics$ici)) {
+    cat(sprintf(
+      "\nCalibration (ICI) not assessed: %d test pair(s) < %d required.\n",
+      x$metrics$n_pairs, x$min_test_pairs %||% 50L
+    ))
+  }
   invisible(x)
 }
 
@@ -113,6 +149,14 @@ print.textscale_validation <- function(x, ...) {
 #'
 #' @export
 plot.textscale_validation <- function(x, bins = 10, ...) {
+  if (is.na(x$ici)) {
+    stop(
+      "Calibration plot not available: test set too small to fit the ",
+      "calibration smooth (", x$metrics$n_pairs, " pair(s); needs >= ",
+      x$min_test_pairs %||% 50L, "). Validate with more test pairs to enable plotting.",
+      call. = FALSE
+    )
+  }
   cal_df         <- x$cal_df
   ici            <- x$ici
   n_ties_dropped <- x$n_ties_dropped %||% 0L

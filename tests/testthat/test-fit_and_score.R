@@ -50,7 +50,8 @@ test_that("scores correlate strongly with the true latent dimension", {
 test_that("validate_model returns a textscale_validation object", {
   result <- validate_model(model, comparisons, emb, force = TRUE)
   expect_s3_class(result, "textscale_validation")
-  expect_named(result$metrics, c("n_pairs", "n_correct", "accuracy", "ici"))
+  expect_named(result$metrics, c("n_pairs", "n_correct", "accuracy",
+                                 "accuracy_lower", "accuracy_upper", "ici"))
   expect_equal(result$metrics$n_pairs, nrow(comparisons))
   expect_gte(result$metrics$accuracy, 0.5)
 })
@@ -79,7 +80,8 @@ test_that("validate_model works with svm model", {
 
   result <- suppressWarnings(validate_model(model_svm, comparisons, emb, force = TRUE))
   expect_s3_class(result, "textscale_validation")
-  expect_named(result$metrics, c("n_pairs", "n_correct", "accuracy", "ici"))
+  expect_named(result$metrics, c("n_pairs", "n_correct", "accuracy",
+                                 "accuracy_lower", "accuracy_upper", "ici"))
 })
 
 # --- Confidence intervals (Laplace) ------------------------------------------
@@ -189,5 +191,36 @@ test_that("fit_model errors on invalid method", {
   expect_snapshot(
     error = TRUE,
     fit_model(comparisons, emb, method = "gbm")
+  )
+})
+
+# --- Small test sets: ICI skipped, accuracy CI reported ---------------------
+
+test_that("validate_model skips ICI when test set is below threshold", {
+  # Synthesize a tiny test set by keeping just the first 20 pairs
+  tiny <- comparisons[seq_len(20), ]
+  result <- suppressMessages(
+    validate_model(model, tiny, emb, force = TRUE, min_test_pairs = 50)
+  )
+  expect_true(is.na(result$metrics$ici))
+  expect_false(is.na(result$metrics$accuracy_lower))
+  expect_false(is.na(result$metrics$accuracy_upper))
+  expect_lte(result$metrics$accuracy_lower, result$metrics$accuracy)
+  expect_gte(result$metrics$accuracy_upper, result$metrics$accuracy)
+})
+
+test_that("plot() errors helpfully when ICI was not assessed", {
+  tiny <- comparisons[seq_len(20), ]
+  result <- suppressMessages(
+    validate_model(model, tiny, emb, force = TRUE, min_test_pairs = 50)
+  )
+  expect_error(plot(result), "Calibration plot not available")
+})
+
+test_that("validate_model errors when fewer than 2 non-tie test pairs", {
+  one <- comparisons[1, ]
+  expect_error(
+    validate_model(model, one, emb, force = TRUE),
+    "Cannot validate"
   )
 })

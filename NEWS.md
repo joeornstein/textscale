@@ -1,5 +1,10 @@
 # textscale (development)
 
+* `validate_model()` now handles small test sets. The metrics tibble
+  includes an Agresti-Coull CI on accuracy, and a new `min_test_pairs`
+  argument (default `50`) skips the ICI step when the test set is too
+  small to fit the calibration smooth reliably.
+
 * Default annotator model changed from `gpt-4.1-mini` to `gpt-5.4-mini` in
   `textscale()` and `annotate_comparisons()`.
 
