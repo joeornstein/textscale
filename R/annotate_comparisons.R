@@ -101,8 +101,9 @@
 #' @param path File path for checkpointing batch API calls (passed to
 #'   [ellmer::batch_chat_text()]). Defaults to
 #'   `"textscale_annotations.json"` in the current working directory.
-#'   Set to `NULL` to disable checkpointing. Ignored when
-#'   `parallel = TRUE`.
+#'   Deleted automatically once the batch completes and results are
+#'   written to `cache`. Set to `NULL` to disable checkpointing.
+#'   Ignored when `parallel = TRUE`.
 #' @param parallel Logical. If `FALSE` (the default), annotations are
 #'   submitted via the OpenAI Batch API at 50% of standard prices.
 #'   Set to `TRUE` to use [ellmer::parallel_chat_text()] for immediate
@@ -247,6 +248,13 @@ annotate_comparisons <- function(
     attr(comparisons, "prompt_hash") <- hash
     .ensure_dir(cache)
     saveRDS(comparisons, cache)
+  }
+
+  # Batch checkpoint is obsolete once results are written to the cache;
+  # leaving it behind causes ellmer::batch_chat_text() to error on the
+  # next run when the prompt set differs (e.g., new seed).
+  if (!parallel && !is.null(path) && file.exists(path)) {
+    unlink(path)
   }
 
   comparisons

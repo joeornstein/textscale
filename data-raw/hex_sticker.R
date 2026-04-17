@@ -1,6 +1,6 @@
 # textscale hex sticker
 # Regenerate by running this script from the package root.
-# Output: textscale_hex.png (320 dpi)
+# Output: man/figures/logo.png (320 dpi)
 
 library(ggplot2)
 library(hexSticker)
@@ -94,8 +94,8 @@ sticker(
   h_color  = "#2166AC",  # blue hex border
   h_size   = 1.5,
 
-  filename = "textscale_hex.png",
+  filename = "man/figures/logo.png",
   dpi      = 320
 )
 
-message("Saved: textscale_hex.png")
+message("Saved: man/figures/logo.png")

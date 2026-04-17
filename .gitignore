@@ -8,6 +8,7 @@
 *.tar.gz
 *.zip
 inst/doc
+nul
 
 # Generated documentation
 docs/

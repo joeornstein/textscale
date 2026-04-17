@@ -52,8 +52,9 @@ Ignored when a custom \code{system_prompt} is supplied.}
 \item{path}{File path for checkpointing batch API calls (passed to
 \code{\link[ellmer:batch_chat]{ellmer::batch_chat_text()}}). Defaults to
 \code{"textscale_annotations.json"} in the current working directory.
-Set to \code{NULL} to disable checkpointing. Ignored when
-\code{parallel = TRUE}.}
+Deleted automatically once the batch completes and results are
+written to \code{cache}. Set to \code{NULL} to disable checkpointing.
+Ignored when \code{parallel = TRUE}.}
 
 \item{parallel}{Logical. If \code{FALSE} (the default), annotations are
 submitted via the OpenAI Batch API at 50\% of standard prices.
