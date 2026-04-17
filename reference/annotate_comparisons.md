@@ -71,8 +71,9 @@ annotate_comparisons(
   File path for checkpointing batch API calls (passed to
   [`ellmer::batch_chat_text()`](https://ellmer.tidyverse.org/reference/batch_chat.html)).
   Defaults to `"textscale_annotations.json"` in the current working
-  directory. Set to `NULL` to disable checkpointing. Ignored when
-  `parallel = TRUE`.
+  directory. Deleted automatically once the batch completes and results
+  are written to `cache`. Set to `NULL` to disable checkpointing.
+  Ignored when `parallel = TRUE`.
 
 - parallel:
 

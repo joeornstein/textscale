@@ -9,7 +9,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">textscale</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9004</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9005</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -109,8 +109,9 @@ Ignored when a custom <code>system_prompt</code> is supplied.</p></dd>
 <dd><p>File path for checkpointing batch API calls (passed to
 <code><a href="https://ellmer.tidyverse.org/reference/batch_chat.html" class="external-link">ellmer::batch_chat_text()</a></code>). Defaults to
 <code>"textscale_annotations.json"</code> in the current working directory.
-Set to <code>NULL</code> to disable checkpointing. Ignored when
-<code>parallel = TRUE</code>.</p></dd>
+Deleted automatically once the batch completes and results are
+written to <code>cache</code>. Set to <code>NULL</code> to disable checkpointing.
+Ignored when <code>parallel = TRUE</code>.</p></dd>
 
 
 <dt id="arg-parallel">parallel<a class="anchor" aria-label="anchor" href="#arg-parallel"></a></dt>
