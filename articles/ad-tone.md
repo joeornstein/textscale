@@ -24,6 +24,7 @@ their Wisconsin congressional ads study alongside their paper. The
 study, together with `textscale` scores derived from those annotations.
 
 ``` r
+
 data(ad_tone)
 glimpse(ad_tone)
 #> Rows: 935
@@ -48,6 +49,7 @@ documents — you would run
 with a single prompt:
 
 ``` r
+
 result <- textscale(
   documents = ad_tone$text,
   prompt    = "Which political ad is more negative toward its opponent?",
@@ -68,6 +70,7 @@ comparisons from Carlson & Montgomery (2017). You can use these to
 estimate `textscale` scores directly without any calls to the LLM.
 
 ``` r
+
 # 1. Get embeddings for each ad
 emb <- get_embeddings(ad_tone$text)
 
@@ -90,6 +93,7 @@ The `ad_tone_validation` object contains the results of evaluating the
 model on a held-out 20% test split of documents.
 
 ``` r
+
 data(ad_tone_validation)
 print(ad_tone_validation)
 #> textscale model validation
@@ -106,6 +110,7 @@ probabilities track observed frequencies closely across the full range
 (ICI = 0.016).
 
 ``` r
+
 plot(ad_tone_validation)
 ```
 
@@ -119,6 +124,7 @@ attacking. The `textscale` scores align well with these categories, with
 the score distributions shifting upward as the ads become more negative.
 
 ``` r
+
 ad_tone |>
   filter(!is.na(tone_label)) |>
   ggplot(aes(x = score, y = tone_label)) +
@@ -142,12 +148,14 @@ identical, since `textscale` uses the annotations to learn a direction
 in embedding space rather than fitting a SentimentIt model directly.
 
 ``` r
+
 cor(ad_tone$score, ad_tone$alphas, use = "pairwise.complete.obs") |>
   round(3)
 #> [1] 0.919
 ```
 
 ``` r
+
 ad_tone |>
   filter(!is.na(tone_label)) |>
   ggplot(aes(x = score, y = alphas, color = tone_label)) +
@@ -170,6 +178,7 @@ embeddings — no additional pairwise annotations. Here are three
 hypothetical ads placed on the negativity scale:
 
 ``` r
+
 new_ads <- c(
   "I will work hard every day in Congress for my constituents. The people
    of Wisconsin are kind, hard-working, and patriotic, and I will do my

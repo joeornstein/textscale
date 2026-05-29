@@ -12,6 +12,7 @@ compared.
 ## Installation
 
 ``` r
+
 # install.packages("pak")
 pak::pak("joeornstein/textscale")
 ```
@@ -25,6 +26,7 @@ Both require an OpenAI API key.
 To install your key in `.Renviron` for use across sessions, run:
 
 ``` r
+
 fuzzylink::openai_api_key("your-key-here", install = TRUE)
 readRenviron("~/.Renviron")  # reload so the key is available immediately
 ```
@@ -36,6 +38,7 @@ it’s set: `Sys.getenv("OPENAI_API_KEY")`.
 ## Usage
 
 ``` r
+
 library(textscale)
 
 result <- textscale(
@@ -68,14 +71,14 @@ comparisons, and returning scores for every document.
 The individual pipeline steps are also exported if you need finer
 control:
 
-| Function                                                                                              | Purpose                                  |
-|-------------------------------------------------------------------------------------------------------|------------------------------------------|
-| [`generate_comparisons()`](https://joeornstein.github.io/textscale/reference/generate_comparisons.md) | Create train/test comparison pairs       |
-| [`get_embeddings()`](https://joeornstein.github.io/textscale/reference/get_embeddings.md)             | Retrieve text embeddings                 |
-| [`annotate_comparisons()`](https://joeornstein.github.io/textscale/reference/annotate_comparisons.md) | Annotate pairs with an LLM               |
-| [`fit_model()`](https://joeornstein.github.io/textscale/reference/fit_model.md)                       | Fit or refit the model                   |
-| [`validate_model()`](https://joeornstein.github.io/textscale/reference/validate_model.md)             | Evaluate accuracy on held-out test pairs |
-| [`score_documents()`](https://joeornstein.github.io/textscale/reference/score_documents.md)           | Score documents on the latent dimension  |
+| Function | Purpose |
+|----|----|
+| [`generate_comparisons()`](https://joeornstein.github.io/textscale/reference/generate_comparisons.md) | Create train/test comparison pairs |
+| [`get_embeddings()`](https://joeornstein.github.io/textscale/reference/get_embeddings.md) | Retrieve text embeddings |
+| [`annotate_comparisons()`](https://joeornstein.github.io/textscale/reference/annotate_comparisons.md) | Annotate pairs with an LLM |
+| [`fit_model()`](https://joeornstein.github.io/textscale/reference/fit_model.md) | Fit or refit the model |
+| [`validate_model()`](https://joeornstein.github.io/textscale/reference/validate_model.md) | Evaluate accuracy on held-out test pairs |
+| [`score_documents()`](https://joeornstein.github.io/textscale/reference/score_documents.md) | Score documents on the latent dimension |
 
 ## How it works
 
