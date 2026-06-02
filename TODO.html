@@ -38,6 +38,8 @@
 
 <ul class="task-list"><li><label><input type="checkbox"><strong>10-fold CV as an alternative to 80/20 split.</strong> Swap <code><a href="reference/generate_comparisons.html">generate_comparisons()</a></code> to sample uniformly across all pairs, annotate once, then emit a <code>fold</code> column (1..k) instead of <code>split</code>. Have <code><a href="reference/validate_model.html">validate_model()</a></code> iterate folds, pool held-out predictions for the ICI smooth, and report fold-level accuracy spread alongside the Agresti–Coull CI. Keep <code>prop</code>/<code>holdout</code> as alternatives. Note: pooled held-out pairs are correlated (same doc appears in multiple folds’ train sets), so the independence assumption in the CI/ICI is mildly violated.</label></li>
 <li><label><input type="checkbox">Update documentation so users know the annotations are batch-submitted by default. Could take up to 24 hours.</label></li>
+<li><label><input type="checkbox">Figure out why the caching doesn’t play nicely with Quarto rendering?</label></li>
+<li><label><input type="checkbox">Needs some sort of progress message between when the annotations are complete and the model is fitting; there’s a long <code>ellmer</code> delay for large batches.</label></li>
 </ul></div>
 
   </main></div>
