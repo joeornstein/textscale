@@ -112,11 +112,6 @@ probabilities track observed frequencies closely across the full range
 ``` r
 
 plot(ad_tone_validation)
-#> Warning: Removed 2058 rows containing non-finite outside the scale range
-#> (`stat_smooth()`).
-#> Warning: Failed to fit group -1.
-#> Caused by error in `gam.reparam()`:
-#> ! NA/NaN/Inf in foreign function call (arg 3)
 ```
 
 ![](ad-tone_files/figure-html/calibration-plot-1.png)
