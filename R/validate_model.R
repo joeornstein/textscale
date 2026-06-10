@@ -184,14 +184,14 @@ plot.textscale_validation <- function(x, bins = 10, ...) {
       linetype = "dashed", color = "grey50", linewidth = 0.5
     ) +
 
-    ggplot2::geom_smooth(
-      method    = "gam",
-      formula   = y ~ s(x, bs = "cs"),
-      color     = "#2166AC",
-      fill      = "#2166AC",
-      alpha     = 0.15,
-      linewidth = 0.9
-    ) +
+    # ggplot2::geom_smooth(
+    #   method    = "gam",
+    #   formula   = y ~ s(x, bs = "cs"),
+    #   color     = "#2166AC",
+    #   fill      = "#2166AC",
+    #   alpha     = 0.15,
+    #   linewidth = 0.9
+    # ) +
     ggplot2::geom_point(
       data  = bin_df,
       ggplot2::aes(x = mean_pred, y = obs_prop, size = n),
