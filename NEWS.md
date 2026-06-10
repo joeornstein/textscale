@@ -1,5 +1,9 @@
 # textscale (development)
 
+* Calibration plot now pools observations using P(A wins) = 1 − P(B wins),
+  folding all pairs into the [50%, 100%] range. This doubles the effective
+  sample size per bin and restricts the plot to predicted probabilities ≥ 50%.
+
 * `validate_model()` now handles small test sets. The metrics tibble
   includes an Agresti-Coull CI on accuracy, and a new `min_test_pairs`
   argument (default `50`) skips the ICI step when the test set is too

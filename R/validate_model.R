@@ -78,15 +78,22 @@ validate_model <- function(model, comparisons, embeddings, force = FALSE,
   acc       <- n_correct / n_pairs
   acc_ci    <- .agresti_coull_ci(n_correct, n_pairs)
 
-  cal_df <- data.frame(prob = prob,
-                       result = as.numeric(comparisons$winner == "A"))
+  # Pool using P(A wins) = 1 - P(B wins): when A is the underdog,
+
+  # swap roles so every observation is expressed as P(favored wins).
+  swap   <- prob < 0.5
+  prob   <- ifelse(swap, 1 - prob, prob)
+  result <- as.numeric(comparisons$winner == "A")
+  result <- ifelse(swap, 1 - result, result)
+
+  cal_df <- data.frame(prob = prob, result = result)
 
   # Integrated Calibration Index: mean absolute deviation of the
   # calibration smooth from the 45-degree line. Skipped when the test
   # set is too small for the smooth to be reliable.
   if (n_pairs >= min_test_pairs) {
     gam_fit <- mgcv::gam(result ~ s(prob, bs = "cs"), data = cal_df)
-    grid    <- seq(0.01, 0.99, by = 0.005)
+    grid    <- seq(0.50, 0.99, by = 0.005)
     fitted  <- as.numeric(predict(gam_fit, newdata = data.frame(prob = grid)))
     ici     <- mean(abs(fitted - grid))
   } else {
@@ -162,7 +169,7 @@ plot.textscale_validation <- function(x, bins = 10, ...) {
   n_ties_dropped <- x$n_ties_dropped %||% 0L
 
   # Bin observed proportions for reliability diagram points
-  breaks <- seq(0, 1, length.out = bins + 1)
+  breaks <- seq(0.5, 1, length.out = bins + 1)
   cuts   <- cut(cal_df$prob, breaks = breaks, include.lowest = TRUE)
   bin_df <- data.frame(
     mean_pred = tapply(cal_df$prob,   cuts, mean,   na.rm = TRUE),
@@ -192,17 +199,17 @@ plot.textscale_validation <- function(x, bins = 10, ...) {
     ) +
     ggplot2::scale_x_continuous(
       labels = scales::percent_format(),
-      limits = c(0, 1), expand = ggplot2::expansion(add = 0.01)
+      limits = c(0.5, 1), expand = ggplot2::expansion(add = 0.01)
     ) +
     ggplot2::scale_y_continuous(
       labels = scales::percent_format(),
-      limits = c(0, 1), expand = ggplot2::expansion(add = 0.01)
+      limits = c(0.5, 1), expand = ggplot2::expansion(add = 0.01)
     ) +
     ggplot2::scale_size_continuous(range = c(2, 8), name = "Pairs") +
     ggplot2::labs(
       title   = "Calibration plot",
-      x       = "Predicted P(A wins)",
-      y       = "Observed P(A wins)",
+      x       = "Predicted probability",
+      y       = "Observed proportion",
       caption = if (n_ties_dropped > 0) {
         paste0("ICI = ", round(ici, 3),
                " (", format(n_ties_dropped, big.mark = ","), " tie(s) excluded)")
