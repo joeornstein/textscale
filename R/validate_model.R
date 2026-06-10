@@ -209,7 +209,7 @@ plot.textscale_validation <- function(x, bins = 10, ...) {
     ggplot2::labs(
       title   = "Calibration plot",
       x       = "Predicted probability",
-      y       = "Observed proportion",
+      y       = "Actual frequency",
       caption = if (n_ties_dropped > 0) {
         paste0("ICI = ", round(ici, 3),
                " (", format(n_ties_dropped, big.mark = ","), " tie(s) excluded)")
