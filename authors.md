@@ -7,13 +7,13 @@
 ## Citation
 
 Ornstein J (2026). *textscale: Measure Latent Quantities from Text Using
-Pairwise Comparisons*. R package version 0.0.0.9006,
+Pairwise Comparisons*. R package version 0.0.0.9007,
 <https://joeornstein.github.io/textscale/>.
 
     @Manual{,
       title = {textscale: Measure Latent Quantities from Text Using Pairwise Comparisons},
       author = {Joseph T. Ornstein},
       year = {2026},
-      note = {R package version 0.0.0.9006},
+      note = {R package version 0.0.0.9007},
       url = {https://joeornstein.github.io/textscale/},
     }

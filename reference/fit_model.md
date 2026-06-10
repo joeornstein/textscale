@@ -41,7 +41,7 @@ fit_model(
   One of `"ridge"` (default), `"lasso"`, `"enet"`, or `"svm"`. Controls
   the fitting method used to identify the latent dimension. `"ridge"`,
   `"lasso"`, and `"enet"` use
-  [`glmnet::cv.glmnet()`](https://rdrr.io/pkg/glmnet/man/cv.glmnet.html)
+  [`glmnet::cv.glmnet()`](https://glmnet.stanford.edu/reference/cv.glmnet.html)
   with alpha 0, 1, and `alpha` respectively. `"svm"` fits a linear
   support vector machine via
   [`e1071::svm()`](https://rdrr.io/pkg/e1071/man/svm.html).
@@ -72,7 +72,7 @@ fit_model(
 - ...:
 
   Additional arguments passed to
-  [`glmnet::cv.glmnet()`](https://rdrr.io/pkg/glmnet/man/cv.glmnet.html)
+  [`glmnet::cv.glmnet()`](https://glmnet.stanford.edu/reference/cv.glmnet.html)
   (for glmnet methods) or
   [`e1071::svm()`](https://rdrr.io/pkg/e1071/man/svm.html) (for
   `method = "svm"`).
@@ -97,12 +97,13 @@ A `textscale_model` object (a list) containing:
 - `cv_fit`:
 
   The full
-  [`glmnet::cv.glmnet()`](https://rdrr.io/pkg/glmnet/man/cv.glmnet.html)
+  [`glmnet::cv.glmnet()`](https://glmnet.stanford.edu/reference/cv.glmnet.html)
   object. Present for glmnet methods only.
 
 - `glmnet_fit`:
 
-  The [`glmnet::glmnet()`](https://rdrr.io/pkg/glmnet/man/glmnet.html)
+  The
+  [`glmnet::glmnet()`](https://glmnet.stanford.edu/reference/glmnet.html)
   model refit at `lambda`. Present for glmnet methods only.
 
 - `svm_fit`:
