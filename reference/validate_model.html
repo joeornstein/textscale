@@ -13,7 +13,7 @@ observed winner label."><meta property="og:image" content="https://joeornstein.g
 
     <a class="navbar-brand me-2" href="../index.html">textscale</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9007</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,7 +50,13 @@ observed <code>winner</code> label.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">validate_model</span><span class="op">(</span><span class="va">model</span>, <span class="va">comparisons</span>, <span class="va">embeddings</span>, force <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">validate_model</span><span class="op">(</span></span>
+<span>  <span class="va">model</span>,</span>
+<span>  <span class="va">comparisons</span>,</span>
+<span>  <span class="va">embeddings</span>,</span>
+<span>  force <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  min_test_pairs <span class="op">=</span> <span class="fl">50L</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'textscale_validation'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, bins <span class="op">=</span> <span class="fl">10</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
@@ -79,10 +85,19 @@ passed to <code><a href="generate_comparisons.html">generate_comparisons()</a></
 
 <dt id="arg-force">force<a class="anchor" aria-label="anchor" href="#arg-force"></a></dt>
 <dd><p>Logical. If <code>FALSE</code> (the default), the function stops
-when accuracy is below 0.55 or ICI exceeds 0.20, and warns when
-accuracy is below 0.65 or ICI exceeds 0.10. Set <code>force = TRUE</code> to
-downgrade stops to warnings and continue anyway. When calling via
+when the upper bound of the 95% CI on accuracy falls below 0.55 or
+ICI exceeds 0.20, and warns when the accuracy CI upper bound is
+below 0.65 or ICI exceeds 0.10. Set <code>force = TRUE</code> to downgrade
+stops to warnings and continue anyway. When calling via
 <code><a href="textscale.html">textscale()</a></code>, pass <code>force = TRUE</code> there instead.</p></dd>
+
+
+<dt id="arg-min-test-pairs">min_test_pairs<a class="anchor" aria-label="anchor" href="#arg-min-test-pairs"></a></dt>
+<dd><p>Integer. Minimum number of (non-tie) test pairs
+required to fit the calibration smooth used to compute the ICI.
+When fewer pairs are available, the GAM step is skipped, <code>ici</code> is
+recorded as <code>NA</code>, and only accuracy (with its Agresti-Coull CI) is
+reported. Defaults to <code>50</code>.</p></dd>
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>

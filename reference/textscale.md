@@ -11,6 +11,7 @@ and returns scores for every document.
 textscale(
   documents,
   prompt,
+  document_type = c("text", "image"),
   prop = 0.8,
   holdout = NULL,
   blocks = NULL,
@@ -18,6 +19,7 @@ textscale(
   n_test = 5000,
   seed = NULL,
   llm_model = "gpt-5.4-mini",
+  embedding_model = NULL,
   embeddings_cache = "textscale_embeddings.rds",
   annotations_cache = "textscale_annotations.rds",
   annotations_path = "textscale_annotations.json",
@@ -36,7 +38,9 @@ textscale(
 
 - documents:
 
-  A character vector of documents to scale.
+  A character vector of documents to scale. When
+  `document_type = "image"`, a character vector of paths to local image
+  files.
 
 - prompt:
 
@@ -44,7 +48,20 @@ textscale(
   directive describing which document should be judged "greater" on the
   latent dimension — no placeholder syntax needed. For example:
   `"Which political ad is more negative toward its opponent?"`. The
-  document text is appended automatically as labelled options A and B.
+  document text (or, for images, the images themselves) is appended
+  automatically as labelled options A and B.
+
+- document_type:
+
+  One of `"text"` (default) or `"image"`. When `"image"`, `documents`
+  are treated as local image file paths: embeddings are retrieved via
+  OpenRouter's multimodal embeddings endpoint (requires
+  `OPENROUTER_API_KEY`) and the LLM annotator is shown the images
+  directly instead of interpolated text. See
+  [`get_embeddings()`](https://joeornstein.github.io/textscale/reference/get_embeddings.md)
+  and
+  [`annotate_comparisons()`](https://joeornstein.github.io/textscale/reference/annotate_comparisons.md)
+  for details.
 
 - prop:
 
@@ -83,6 +100,13 @@ textscale(
 - llm_model:
 
   OpenAI model name used for annotation. Defaults to `"gpt-5.4-mini"`.
+
+- embedding_model:
+
+  Character string naming the embedding model to use. When `NULL` (the
+  default),
+  [`get_embeddings()`](https://joeornstein.github.io/textscale/reference/get_embeddings.md)
+  picks a built-in default based on `document_type`.
 
 - embeddings_cache:
 

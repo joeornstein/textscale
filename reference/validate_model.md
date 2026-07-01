@@ -8,7 +8,13 @@ observed `winner` label.
 ## Usage
 
 ``` r
-validate_model(model, comparisons, embeddings, force = FALSE)
+validate_model(
+  model,
+  comparisons,
+  embeddings,
+  force = FALSE,
+  min_test_pairs = 50L
+)
 
 # S3 method for class 'textscale_validation'
 plot(x, bins = 10, ...)
@@ -35,12 +41,21 @@ plot(x, bins = 10, ...)
 
 - force:
 
-  Logical. If `FALSE` (the default), the function stops when accuracy is
-  below 0.55 or ICI exceeds 0.20, and warns when accuracy is below 0.65
-  or ICI exceeds 0.10. Set `force = TRUE` to downgrade stops to warnings
-  and continue anyway. When calling via
+  Logical. If `FALSE` (the default), the function stops when the upper
+  bound of the 95% CI on accuracy falls below 0.55 or ICI exceeds 0.20,
+  and warns when the accuracy CI upper bound is below 0.65 or ICI
+  exceeds 0.10. Set `force = TRUE` to downgrade stops to warnings and
+  continue anyway. When calling via
   [`textscale()`](https://joeornstein.github.io/textscale/reference/textscale.md),
   pass `force = TRUE` there instead.
+
+- min_test_pairs:
+
+  Integer. Minimum number of (non-tie) test pairs required to fit the
+  calibration smooth used to compute the ICI. When fewer pairs are
+  available, the GAM step is skipped, `ici` is recorded as `NA`, and
+  only accuracy (with its Agresti-Coull CI) is reported. Defaults to
+  `50`.
 
 - x:
 

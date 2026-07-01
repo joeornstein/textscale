@@ -15,7 +15,7 @@ the API and appended to the cache before returning."><meta property="og:image" c
 
     <a class="navbar-brand me-2" href="../index.html">textscale</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9007</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,7 +53,13 @@ the API and appended to the cache before returning.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_embeddings</span><span class="op">(</span><span class="va">documents</span>, cache <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_embeddings</span><span class="op">(</span></span>
+<span>  <span class="va">documents</span>,</span>
+<span>  cache <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"text"</span>, <span class="st">"image"</span><span class="op">)</span>,</span>
+<span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -61,7 +67,8 @@ the API and appended to the cache before returning.</p>
 
 
 <dl><dt id="arg-documents">documents<a class="anchor" aria-label="anchor" href="#arg-documents"></a></dt>
-<dd><p>A character vector of texts to embed.</p></dd>
+<dd><p>A character vector of texts to embed. When
+<code>type = "image"</code>, a character vector of paths to local image files.</p></dd>
 
 
 <dt id="arg-cache">cache<a class="anchor" aria-label="anchor" href="#arg-cache"></a></dt>
@@ -71,9 +78,25 @@ Any new documents are fetched and written back to the cache. If
 <code>NULL</code>, embeddings are always computed fresh without caching.</p></dd>
 
 
+<dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
+<dd><p>One of <code>"text"</code> (default) or <code>"image"</code>. <code>"text"</code> embeds
+<code>documents</code> via <code><a href="https://joeornstein.github.io/software/fuzzylink/reference/get_embeddings.html" class="external-link">fuzzylink::get_embeddings()</a></code> (OpenAI/Mistral text
+embeddings). <code>"image"</code> treats <code>documents</code> as local image file paths
+and embeds them via OpenRouter's multimodal embeddings endpoint,
+which requires an <code>OPENROUTER_API_KEY</code> environment variable.</p></dd>
+
+
+<dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>
+<dd><p>Character string naming the embedding model to use. When
+<code>NULL</code> (the default), each <code>type</code> uses its own built-in default:
+<code>"text-embedding-3-large"</code> for <code>type = "text"</code>, or
+<code>"google/gemini-embedding-2"</code> for <code>type = "image"</code>.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments passed to
-<code><a href="https://joeornstein.github.io/software/fuzzylink/reference/get_embeddings.html" class="external-link">fuzzylink::get_embeddings()</a></code>.</p></dd>
+<code><a href="https://joeornstein.github.io/software/fuzzylink/reference/get_embeddings.html" class="external-link">fuzzylink::get_embeddings()</a></code> (for <code>type = "text"</code>) or to the
+internal OpenRouter request body (for <code>type = "image"</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">

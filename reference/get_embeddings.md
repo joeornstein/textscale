@@ -10,14 +10,21 @@ via the API and appended to the cache before returning.
 ## Usage
 
 ``` r
-get_embeddings(documents, cache = NULL, ...)
+get_embeddings(
+  documents,
+  cache = NULL,
+  type = c("text", "image"),
+  model = NULL,
+  ...
+)
 ```
 
 ## Arguments
 
 - documents:
 
-  A character vector of texts to embed.
+  A character vector of texts to embed. When `type = "image"`, a
+  character vector of paths to local image files.
 
 - cache:
 
@@ -26,10 +33,29 @@ get_embeddings(documents, cache = NULL, ...)
   fetched and written back to the cache. If `NULL`, embeddings are
   always computed fresh without caching.
 
+- type:
+
+  One of `"text"` (default) or `"image"`. `"text"` embeds `documents`
+  via
+  [`fuzzylink::get_embeddings()`](https://joeornstein.github.io/software/fuzzylink/reference/get_embeddings.html)
+  (OpenAI/Mistral text embeddings). `"image"` treats `documents` as
+  local image file paths and embeds them via OpenRouter's multimodal
+  embeddings endpoint, which requires an `OPENROUTER_API_KEY`
+  environment variable.
+
+- model:
+
+  Character string naming the embedding model to use. When `NULL` (the
+  default), each `type` uses its own built-in default:
+  `"text-embedding-3-large"` for `type = "text"`, or
+  `"google/gemini-embedding-2"` for `type = "image"`.
+
 - ...:
 
   Additional arguments passed to
-  [`fuzzylink::get_embeddings()`](https://joeornstein.github.io/software/fuzzylink/reference/get_embeddings.html).
+  [`fuzzylink::get_embeddings()`](https://joeornstein.github.io/software/fuzzylink/reference/get_embeddings.html)
+  (for `type = "text"`) or to the internal OpenRouter request body (for
+  `type = "image"`).
 
 ## Value
 

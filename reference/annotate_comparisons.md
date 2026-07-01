@@ -11,6 +11,8 @@ annotate_comparisons(
   instructions = NULL,
   prompt = "A: {{text_a}}\nB: {{text_b}}",
   model = "gpt-5.4-mini",
+  document_type = c("text", "image"),
+  resize = "high",
   system_prompt = NULL,
   allow_ties = TRUE,
   path = "textscale_annotations.json",
@@ -41,12 +43,30 @@ annotate_comparisons(
   [`ellmer::interpolate()`](https://ellmer.tidyverse.org/reference/interpolate.html)
   template string for formatting each document pair. Defaults to
   `"A: {{text_a}}\\nB: {{text_b}}"`. Override this only if you need a
-  non-standard document layout.
+  non-standard document layout. Ignored when `document_type = "image"`.
 
 - model:
 
   Character string naming the OpenAI model to use. Defaults to
-  `"gpt-5.4-mini"`.
+  `"gpt-5.4-mini"`. When `document_type = "image"`, must name a
+  vision-capable model.
+
+- document_type:
+
+  One of `"text"` (default) or `"image"`. When `"image"`,
+  `text_a`/`text_b` in `comparisons` are treated as paths to local image
+  files: each is attached to the LLM turn via
+  [`ellmer::content_image_file()`](https://ellmer.tidyverse.org/reference/content_image_url.html)
+  (labelled "Image A:"/"Image B:") instead of being interpolated into
+  `prompt`, and the default `system_prompt` notes that the images are
+  shown in that order.
+
+- resize:
+
+  Passed to
+  [`ellmer::content_image_file()`](https://ellmer.tidyverse.org/reference/content_image_url.html)
+  as the `resize` argument. Only used when `document_type = "image"`.
+  Defaults to `"high"`.
 
 - system_prompt:
 
