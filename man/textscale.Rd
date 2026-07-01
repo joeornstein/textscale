@@ -7,6 +7,7 @@
 textscale(
   documents,
   prompt,
+  document_type = c("text", "image"),
   prop = 0.8,
   holdout = NULL,
   blocks = NULL,
@@ -14,6 +15,7 @@ textscale(
   n_test = 5000,
   seed = NULL,
   llm_model = "gpt-5.4-mini",
+  embedding_model = NULL,
   embeddings_cache = "textscale_embeddings.rds",
   annotations_cache = "textscale_annotations.rds",
   annotations_path = "textscale_annotations.json",
@@ -28,13 +30,22 @@ textscale(
 )
 }
 \arguments{
-\item{documents}{A character vector of documents to scale.}
+\item{documents}{A character vector of documents to scale. When
+\code{document_type = "image"}, a character vector of paths to local
+image files.}
 
 \item{prompt}{Instruction text for the LLM annotator. Should be a
 plain question or directive describing which document should be
 judged "greater" on the latent dimension — no placeholder syntax
-needed. For example: \code{"Which political ad is more negative toward its opponent?"}. The document text is appended automatically as
-labelled options A and B.}
+needed. For example: \code{"Which political ad is more negative toward its opponent?"}. The document text (or, for images, the images
+themselves) is appended automatically as labelled options A and B.}
+
+\item{document_type}{One of \code{"text"} (default) or \code{"image"}. When
+\code{"image"}, \code{documents} are treated as local image file paths:
+embeddings are retrieved via OpenRouter's multimodal embeddings
+endpoint (requires \code{OPENROUTER_API_KEY}) and the LLM annotator is
+shown the images directly instead of interpolated text. See
+\code{\link[=get_embeddings]{get_embeddings()}} and \code{\link[=annotate_comparisons]{annotate_comparisons()}} for details.}
 
 \item{prop}{Proportion of documents assigned to the training split.
 Defaults to \code{0.8}. Cannot be used together with \code{holdout}.}
@@ -59,6 +70,10 @@ Defaults to \code{NULL}.}
 
 \item{llm_model}{OpenAI model name used for annotation. Defaults to
 \code{"gpt-5.4-mini"}.}
+
+\item{embedding_model}{Character string naming the embedding model to
+use. When \code{NULL} (the default), \code{\link[=get_embeddings]{get_embeddings()}} picks a built-in
+default based on \code{document_type}.}
 
 \item{embeddings_cache}{File path for caching embeddings as an RDS
 file. Passed to \code{\link[=get_embeddings]{get_embeddings()}}. Defaults to

@@ -5,7 +5,13 @@
 \alias{plot.textscale_validation}
 \title{Validate a textscale model on held-out comparisons}
 \usage{
-validate_model(model, comparisons, embeddings, force = FALSE)
+validate_model(
+  model,
+  comparisons,
+  embeddings,
+  force = FALSE,
+  min_test_pairs = 50L
+)
 
 \method{plot}{textscale_validation}(x, bins = 10, ...)
 }
@@ -22,10 +28,17 @@ must correspond to document \code{i} in the original \code{documents} vector
 passed to \code{\link[=generate_comparisons]{generate_comparisons()}}.}
 
 \item{force}{Logical. If \code{FALSE} (the default), the function stops
-when accuracy is below 0.55 or ICI exceeds 0.20, and warns when
-accuracy is below 0.65 or ICI exceeds 0.10. Set \code{force = TRUE} to
-downgrade stops to warnings and continue anyway. When calling via
+when the upper bound of the 95\% CI on accuracy falls below 0.55 or
+ICI exceeds 0.20, and warns when the accuracy CI upper bound is
+below 0.65 or ICI exceeds 0.10. Set \code{force = TRUE} to downgrade
+stops to warnings and continue anyway. When calling via
 \code{\link[=textscale]{textscale()}}, pass \code{force = TRUE} there instead.}
+
+\item{min_test_pairs}{Integer. Minimum number of (non-tie) test pairs
+required to fit the calibration smooth used to compute the ICI.
+When fewer pairs are available, the GAM step is skipped, \code{ici} is
+recorded as \code{NA}, and only accuracy (with its Agresti-Coull CI) is
+reported. Defaults to \code{50}.}
 
 \item{x}{A \code{textscale_validation} object.}
 

@@ -89,3 +89,61 @@ test_that("tie variants are normalised to lowercase 'tie'", {
                                  allow_ties = TRUE, parallel = TRUE)
   expect_equal(result$winner, c("A", "tie", "tie"))
 })
+
+# --- document_type = "image" ---------------------------------------------
+
+img_docs <- c("a.png", "b.png", "c.png")
+img_comparisons <- generate_comparisons(img_docs)
+
+test_that("document_type = 'image' builds image prompts and skips interpolate", {
+  local_mocked_bindings(
+    .content_image_file = function(path, ...) {
+      ellmer::ContentImageInline(type = "image/png", data = "ZmFrZQ==")
+    }
+  )
+
+  captured_prompts <- NULL
+  local_mocked_bindings(
+    .chat_openai = function(...) NULL,
+    .parallel_chat_text = function(chat, prompts, ...) {
+      captured_prompts <<- prompts
+      rep("A", length(prompts))
+    }
+  )
+
+  result <- annotate_comparisons(img_comparisons, instructions = "?",
+                                 document_type = "image", parallel = TRUE)
+
+  expect_equal(result$winner, rep("A", nrow(img_comparisons)))
+  expect_true(is.list(captured_prompts[[1]]))
+  expect_true(inherits(captured_prompts[[1]][[2]], "ellmer::ContentImageInline"))
+})
+
+test_that("document_type = 'image' caching works by file path", {
+  local_mocked_bindings(
+    .content_image_file = function(path, ...) {
+      ellmer::ContentImageInline(type = "image/png", data = "ZmFrZQ==")
+    }
+  )
+
+  tmp_cache <- tempfile(fileext = ".rds")
+  on.exit(unlink(tmp_cache))
+
+  local_mocked_bindings(
+    .chat_openai = function(...) NULL,
+    .parallel_chat_text = function(chat, prompts, ...) rep("A", length(prompts))
+  )
+
+  result <- annotate_comparisons(img_comparisons, instructions = "?",
+                                 document_type = "image", cache = tmp_cache,
+                                 parallel = TRUE)
+  expect_true(file.exists(tmp_cache))
+
+  expect_message(
+    annotate_comparisons(img_comparisons, instructions = "?",
+                         document_type = "image", cache = tmp_cache,
+                         parallel = TRUE),
+    "comparison(s) loaded from cache",
+    fixed = TRUE
+  )
+})

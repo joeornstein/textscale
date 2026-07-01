@@ -1,5 +1,17 @@
 # textscale (development)
 
+* `textscale()`, `get_embeddings()`, and `annotate_comparisons()` gain a
+  `document_type` argument (`"text"` or `"image"`) for scaling image
+  documents. When `document_type = "image"`, `documents` are local image
+  file paths: `get_embeddings()` retrieves multimodal embeddings from
+  OpenRouter's `google/gemini-embedding-2` (requires an
+  `OPENROUTER_API_KEY` environment variable), and `annotate_comparisons()`
+  attaches the two images directly to the LLM judge's turn via
+  `ellmer::content_image_file()` instead of interpolating text.
+  `generate_comparisons()`, `fit_model()`, `score_documents()`, and
+  `validate_model()` are unchanged, since they already operate purely on
+  the embedding matrix and document indices.
+
 * Calibration plot now pools observations using P(A wins) = 1 − P(B wins),
   folding all pairs into the [50%, 100%] range. This doubles the effective
   sample size per bin and restricts the plot to predicted probabilities ≥ 50%.

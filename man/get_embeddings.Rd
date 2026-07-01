@@ -4,18 +4,37 @@
 \alias{get_embeddings}
 \title{Get text embeddings with optional caching}
 \usage{
-get_embeddings(documents, cache = NULL, ...)
+get_embeddings(
+  documents,
+  cache = NULL,
+  type = c("text", "image"),
+  model = NULL,
+  ...
+)
 }
 \arguments{
-\item{documents}{A character vector of texts to embed.}
+\item{documents}{A character vector of texts to embed. When
+\code{type = "image"}, a character vector of paths to local image files.}
 
 \item{cache}{Optional path to an \code{.rds} file. If the file exists,
 cached embeddings matching \code{documents} (by row name) are reused.
 Any new documents are fetched and written back to the cache. If
 \code{NULL}, embeddings are always computed fresh without caching.}
 
+\item{type}{One of \code{"text"} (default) or \code{"image"}. \code{"text"} embeds
+\code{documents} via \code{\link[fuzzylink:get_embeddings]{fuzzylink::get_embeddings()}} (OpenAI/Mistral text
+embeddings). \code{"image"} treats \code{documents} as local image file paths
+and embeds them via OpenRouter's multimodal embeddings endpoint,
+which requires an \code{OPENROUTER_API_KEY} environment variable.}
+
+\item{model}{Character string naming the embedding model to use. When
+\code{NULL} (the default), each \code{type} uses its own built-in default:
+\code{"text-embedding-3-large"} for \code{type = "text"}, or
+\code{"google/gemini-embedding-2"} for \code{type = "image"}.}
+
 \item{...}{Additional arguments passed to
-\code{\link[fuzzylink:get_embeddings]{fuzzylink::get_embeddings()}}.}
+\code{\link[fuzzylink:get_embeddings]{fuzzylink::get_embeddings()}} (for \code{type = "text"}) or to the
+internal OpenRouter request body (for \code{type = "image"}).}
 }
 \value{
 A numeric matrix with one row per document and one column

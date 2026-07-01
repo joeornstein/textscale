@@ -34,6 +34,15 @@ readRenviron("~/.Renviron")  # reload so the key is available immediately
 You can get a key at [platform.openai.com](https://platform.openai.com/api-keys).
 To verify it's set: `Sys.getenv("OPENAI_API_KEY")`.
 
+Scoring image documents (`document_type = "image"` in `textscale()`) also
+requires an [OpenRouter](https://openrouter.ai/) API key, set as
+`OPENROUTER_API_KEY`, used to retrieve multimodal embeddings. Add it to
+`.Renviron` the same way:
+
+```r
+Sys.setenv(OPENROUTER_API_KEY = "your-key-here")  # or add directly to .Renviron
+```
+
 ## Usage
 
 ```r

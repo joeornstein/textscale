@@ -10,6 +10,10 @@
 #' @export
 .parallel_chat_text <- function(...) ellmer::parallel_chat_text(...)
 
+#' @keywords internal
+#' @export
+.content_image_file <- function(...) ellmer::content_image_file(...)
+
 # Published OpenAI prices in USD per million tokens (standard rate).
 # Batch API is 50% cheaper. Update as prices change.
 .model_prices <- list(
@@ -46,6 +50,29 @@
   sprintf(
     "Estimated API cost: ~$%.4g for %s new comparison(s) using %s%s. Prices are approximate; see https://openai.com/api/pricing/ for current rates.",
     cost, format(n, big.mark = ","), model, mode_note
+  )
+}
+
+# Build a cost-estimate message for a set of image comparisons. Unlike
+# .cost_estimate_message(), image token counts can't be derived from
+# character length, so a flat per-image token estimate is assumed.
+# Returns NULL silently when the model is not in the pricing table.
+.cost_estimate_message_image <- function(n, system_prompt, model, batch = FALSE,
+                                          tokens_per_image = 1500) {
+  if (!model %in% names(.model_prices)) return(NULL)
+
+  p <- .model_prices[[model]]
+  if (batch) p <- p * 0.5
+
+  input_tokens  <- n * (2 * tokens_per_image + nchar(system_prompt) / 4)
+  output_tokens <- n  # single-letter response
+
+  cost <- (input_tokens / 1e6) * p["input"] + (output_tokens / 1e6) * p["output"]
+
+  mode_note <- if (batch) " (batch pricing, 50% discount applied)" else ""
+  sprintf(
+    "Estimated API cost: ~$%.4g for %s new image comparison(s) using %s%s (assumes ~%s tokens/image; actual cost depends on image resolution and provider). Prices are approximate; see https://openai.com/api/pricing/ for current rates.",
+    cost, format(n, big.mark = ","), model, mode_note, format(tokens_per_image, big.mark = ",")
   )
 }
 
@@ -90,9 +117,20 @@
 #' @param prompt An [ellmer::interpolate()] template string for
 #'   formatting each document pair. Defaults to
 #'   `"A: {{text_a}}\\nB: {{text_b}}"`. Override this only if you need
-#'   a non-standard document layout.
+#'   a non-standard document layout. Ignored when
+#'   `document_type = "image"`.
 #' @param model Character string naming the OpenAI model to use.
-#'   Defaults to `"gpt-5.4-mini"`.
+#'   Defaults to `"gpt-5.4-mini"`. When `document_type = "image"`, must
+#'   name a vision-capable model.
+#' @param document_type One of `"text"` (default) or `"image"`. When
+#'   `"image"`, `text_a`/`text_b` in `comparisons` are treated as paths
+#'   to local image files: each is attached to the LLM turn via
+#'   [ellmer::content_image_file()] (labelled "Image A:"/"Image B:")
+#'   instead of being interpolated into `prompt`, and the default
+#'   `system_prompt` notes that the images are shown in that order.
+#' @param resize Passed to [ellmer::content_image_file()] as the
+#'   `resize` argument. Only used when `document_type = "image"`.
+#'   Defaults to `"high"`.
 #' @param system_prompt System prompt sent to the LLM. When `NULL`
 #'   (the default), an appropriate prompt is generated based on the
 #'   `allow_ties` argument. Supply a custom value to override this
@@ -139,6 +177,8 @@ annotate_comparisons <- function(
     instructions = NULL,
     prompt = "A: {{text_a}}\nB: {{text_b}}",
     model = "gpt-5.4-mini",
+    document_type = c("text", "image"),
+    resize = "high",
     system_prompt = NULL,
     allow_ties = TRUE,
     path = "textscale_annotations.json",
@@ -146,11 +186,19 @@ annotate_comparisons <- function(
     cache = NULL,
     ...) {
 
+  document_type <- match.arg(document_type)
+
   if (is.null(system_prompt)) {
     system_prompt <- if (allow_ties) {
       "Respond with 'A', 'B', or 'tie'."
     } else {
       "Respond with a single letter ('A' or 'B') only. No ties allowed."
+    }
+    if (document_type == "image") {
+      system_prompt <- paste0(
+        "You will be shown two images, labelled Image A and Image B, in that order.\n",
+        system_prompt
+      )
     }
   }
 
@@ -158,7 +206,11 @@ annotate_comparisons <- function(
     system_prompt <- paste0(instructions, "\n", system_prompt)
   }
 
-  hash <- .prompt_hash(prompt, system_prompt)
+  hash <- if (document_type == "image") {
+    .prompt_hash(document_type, resize, system_prompt)
+  } else {
+    .prompt_hash(prompt, system_prompt)
+  }
 
   # Start with all winners unknown
   comparisons$winner <- NA_character_
@@ -198,12 +250,26 @@ annotate_comparisons <- function(
   # Annotate only uncached rows
   new_rows <- comparisons[needs_annotation, ]
   chat <- .chat_openai(system_prompt, model = model)
-  prompts <- do.call(
-    ellmer::interpolate,
-    c(list(prompt), as.list(new_rows))
-  )
 
-  cost_msg <- .cost_estimate_message(prompts, system_prompt, model, batch = !parallel)
+  if (document_type == "image") {
+    prompts <- Map(function(path_a, path_b) {
+      list(
+        ellmer::ContentText("Image A:"),
+        .content_image_file(path_a, resize = resize),
+        ellmer::ContentText("Image B:"),
+        .content_image_file(path_b, resize = resize)
+      )
+    }, new_rows$text_a, new_rows$text_b)
+
+    cost_msg <- .cost_estimate_message_image(length(prompts), system_prompt, model, batch = !parallel)
+  } else {
+    prompts <- do.call(
+      ellmer::interpolate,
+      c(list(prompt), as.list(new_rows))
+    )
+
+    cost_msg <- .cost_estimate_message(prompts, system_prompt, model, batch = !parallel)
+  }
   if (!is.null(cost_msg)) message(cost_msg)
 
   responses <- if (parallel) {

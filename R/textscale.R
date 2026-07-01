@@ -5,13 +5,24 @@
 #' and validates a model on the train/test split, refits on all
 #' comparisons, and returns scores for every document.
 #'
-#' @param documents A character vector of documents to scale.
+#' @param documents A character vector of documents to scale. When
+#'   `document_type = "image"`, a character vector of paths to local
+#'   image files.
 #' @param prompt Instruction text for the LLM annotator. Should be a
 #'   plain question or directive describing which document should be
 #'   judged "greater" on the latent dimension — no placeholder syntax
 #'   needed. For example: `"Which political ad is more negative toward
-#'   its opponent?"`. The document text is appended automatically as
-#'   labelled options A and B.
+#'   its opponent?"`. The document text (or, for images, the images
+#'   themselves) is appended automatically as labelled options A and B.
+#' @param document_type One of `"text"` (default) or `"image"`. When
+#'   `"image"`, `documents` are treated as local image file paths:
+#'   embeddings are retrieved via OpenRouter's multimodal embeddings
+#'   endpoint (requires `OPENROUTER_API_KEY`) and the LLM annotator is
+#'   shown the images directly instead of interpolated text. See
+#'   [get_embeddings()] and [annotate_comparisons()] for details.
+#' @param embedding_model Character string naming the embedding model to
+#'   use. When `NULL` (the default), [get_embeddings()] picks a built-in
+#'   default based on `document_type`.
 #' @param prop Proportion of documents assigned to the training split.
 #'   Defaults to `0.8`. Cannot be used together with `holdout`.
 #' @param holdout Optional logical vector the same length as `documents`.
@@ -92,6 +103,7 @@
 textscale <- function(
     documents,
     prompt,
+    document_type = c("text", "image"),
     prop = 0.8,
     holdout = NULL,
     blocks = NULL,
@@ -99,6 +111,7 @@ textscale <- function(
     n_test = 5000,
     seed = NULL,
     llm_model = "gpt-5.4-mini",
+    embedding_model = NULL,
     embeddings_cache = "textscale_embeddings.rds",
     annotations_cache = "textscale_annotations.rds",
     annotations_path = "textscale_annotations.json",
@@ -110,6 +123,8 @@ textscale <- function(
     validate = TRUE,
     force = FALSE,
     ...) {
+
+  document_type <- match.arg(document_type)
 
   # When holdout is supplied, don't pass prop
   use_prop <- if (!is.null(holdout)) NULL else prop
@@ -125,14 +140,20 @@ textscale <- function(
     seed    = seed
   )
 
-  # Step 2: Retrieve text embeddings
-  embeddings <- get_embeddings(documents, cache = embeddings_cache)
+  # Step 2: Retrieve embeddings
+  embeddings <- get_embeddings(
+    documents,
+    cache = embeddings_cache,
+    type  = document_type,
+    model = embedding_model
+  )
 
   # Step 3: Annotate comparisons with LLM
   comparisons <- annotate_comparisons(
     comparisons,
     instructions  = prompt,
     model         = llm_model,
+    document_type = document_type,
     allow_ties    = allow_ties,
     cache         = annotations_cache,
     path          = annotations_path,

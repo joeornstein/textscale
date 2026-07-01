@@ -9,6 +9,8 @@ annotate_comparisons(
   instructions = NULL,
   prompt = "A: {{text_a}}\\nB: {{text_b}}",
   model = "gpt-5.4-mini",
+  document_type = c("text", "image"),
+  resize = "high",
   system_prompt = NULL,
   allow_ties = TRUE,
   path = "textscale_annotations.json",
@@ -30,10 +32,23 @@ argument you need beyond \code{comparisons}.}
 \item{prompt}{An \code{\link[ellmer:interpolate]{ellmer::interpolate()}} template string for
 formatting each document pair. Defaults to
 \code{"A: {{text_a}}\\\\nB: {{text_b}}"}. Override this only if you need
-a non-standard document layout.}
+a non-standard document layout. Ignored when
+\code{document_type = "image"}.}
 
 \item{model}{Character string naming the OpenAI model to use.
-Defaults to \code{"gpt-5.4-mini"}.}
+Defaults to \code{"gpt-5.4-mini"}. When \code{document_type = "image"}, must
+name a vision-capable model.}
+
+\item{document_type}{One of \code{"text"} (default) or \code{"image"}. When
+\code{"image"}, \code{text_a}/\code{text_b} in \code{comparisons} are treated as paths
+to local image files: each is attached to the LLM turn via
+\code{\link[ellmer:content_image_url]{ellmer::content_image_file()}} (labelled "Image A:"/"Image B:")
+instead of being interpolated into \code{prompt}, and the default
+\code{system_prompt} notes that the images are shown in that order.}
+
+\item{resize}{Passed to \code{\link[ellmer:content_image_url]{ellmer::content_image_file()}} as the
+\code{resize} argument. Only used when \code{document_type = "image"}.
+Defaults to \code{"high"}.}
 
 \item{system_prompt}{System prompt sent to the LLM. When \code{NULL}
 (the default), an appropriate prompt is generated based on the
