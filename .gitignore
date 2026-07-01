@@ -16,3 +16,7 @@ docs/
 /doc/
 /Meta/
 docs
+
+# Python artifacts (data-raw scripts)
+__pycache__/
+*.pyc
