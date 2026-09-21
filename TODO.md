@@ -11,13 +11,4 @@ fold-level accuracy spread alongside the Agresti–Coull CI. Keep
 correlated (same doc appears in multiple folds’ train sets), so the
 independence assumption in the CI/ICI is mildly violated.
 
-Update documentation so users know the annotations are batch-submitted
-by default. Could take up to 24 hours.
-
-Figure out why the caching doesn’t play nicely with Quarto rendering?
-
-Needs some sort of progress message between when the annotations are
-complete and the model is fitting; there’s a long `ellmer` delay for
-large batches.
-
 Consider a single *path* for caching.
