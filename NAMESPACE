@@ -17,12 +17,16 @@ export(get_embeddings)
 export(score_documents)
 export(textscale)
 export(validate_model)
-importFrom(dplyr,filter)
-importFrom(dplyr,mutate)
-importFrom(dplyr,select)
-importFrom(stats,coef)
-importFrom(stats,plogis)
-importFrom(stats,predict)
-importFrom(stats,qnorm)
-importFrom(stats,quantile)
+importFrom(dplyr,
+  filter,
+  mutate,
+  select
+)
+importFrom(stats,
+  coef,
+  plogis,
+  predict,
+  qnorm,
+  quantile
+)
 importFrom(tibble,tibble)

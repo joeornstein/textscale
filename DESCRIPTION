@@ -14,7 +14,6 @@ Description: Implements a method for measuring latent quantities (e.g.,
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Imports: 
     dplyr,
     e1071,
@@ -38,3 +37,4 @@ LazyData: true
 Depends: 
     R (>= 3.5)
 URL: https://joeornstein.github.io/textscale/
+Config/roxygen2/version: 8.1.0

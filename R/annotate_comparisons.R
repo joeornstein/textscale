@@ -142,9 +142,9 @@
 #'   Deleted automatically once the batch completes and results are
 #'   written to `cache`. Set to `NULL` to disable checkpointing.
 #'   Ignored when `parallel = TRUE`.
-#' @param parallel Logical. If `FALSE` (the default), annotations are
+#' @param parallel Logical. If `FALSE`, annotations are
 #'   submitted via the OpenAI Batch API at 50% of standard prices.
-#'   Set to `TRUE` to use [ellmer::parallel_chat_text()] for immediate
+#'   If `TRUE` (the default), annotations are submitted via [ellmer::parallel_chat_text()] for immediate
 #'   results at standard prices.
 #' @param cache Optional path to an `.rds` file. If the file exists,
 #'   cached annotations are matched to the incoming `comparisons` by
@@ -182,7 +182,7 @@ annotate_comparisons <- function(
     system_prompt = NULL,
     allow_ties = TRUE,
     path = "textscale_annotations.json",
-    parallel = FALSE,
+    parallel = TRUE,
     cache = NULL,
     ...) {
 

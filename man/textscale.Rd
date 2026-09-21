@@ -19,7 +19,7 @@ textscale(
   embeddings_cache = "textscale_embeddings.rds",
   annotations_cache = "textscale_annotations.rds",
   annotations_path = "textscale_annotations.json",
-  parallel = FALSE,
+  parallel = TRUE,
   allow_ties = TRUE,
   method = "ridge",
   ci = TRUE,
@@ -91,9 +91,9 @@ Passed to \code{\link[=annotate_comparisons]{annotate_comparisons()}} as \code{p
 Set to \code{NULL} to disable checkpointing. Ignored when
 \code{parallel = TRUE}.}
 
-\item{parallel}{Logical. If \code{FALSE} (the default), annotations are
+\item{parallel}{Logical. If \code{FALSE}, annotations are
 submitted via the OpenAI Batch API at 50\% of standard prices.
-Set to \code{TRUE} to use \code{\link[ellmer:parallel_chat]{ellmer::parallel_chat_text()}} for immediate
+If \code{TRUE} (the default) annotations submitted via \code{\link[ellmer:parallel_chat_text]{ellmer::parallel_chat_text()}} for immediate
 results at standard prices.}
 
 \item{allow_ties}{Logical. If \code{TRUE} (the default), the LLM may

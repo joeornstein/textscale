@@ -14,7 +14,7 @@ annotate_comparisons(
   system_prompt = NULL,
   allow_ties = TRUE,
   path = "textscale_annotations.json",
-  parallel = FALSE,
+  parallel = TRUE,
   cache = NULL,
   ...
 )
@@ -42,11 +42,11 @@ name a vision-capable model.}
 \item{document_type}{One of \code{"text"} (default) or \code{"image"}. When
 \code{"image"}, \code{text_a}/\code{text_b} in \code{comparisons} are treated as paths
 to local image files: each is attached to the LLM turn via
-\code{\link[ellmer:content_image_url]{ellmer::content_image_file()}} (labelled "Image A:"/"Image B:")
+\code{\link[ellmer:content_image_file]{ellmer::content_image_file()}} (labelled "Image A:"/"Image B:")
 instead of being interpolated into \code{prompt}, and the default
 \code{system_prompt} notes that the images are shown in that order.}
 
-\item{resize}{Passed to \code{\link[ellmer:content_image_url]{ellmer::content_image_file()}} as the
+\item{resize}{Passed to \code{\link[ellmer:content_image_file]{ellmer::content_image_file()}} as the
 \code{resize} argument. Only used when \code{document_type = "image"}.
 Defaults to \code{"high"}.}
 
@@ -65,15 +65,15 @@ prompt instructs the LLM to choose A or B with no ties allowed.
 Ignored when a custom \code{system_prompt} is supplied.}
 
 \item{path}{File path for checkpointing batch API calls (passed to
-\code{\link[ellmer:batch_chat]{ellmer::batch_chat_text()}}). Defaults to
+\code{\link[ellmer:batch_chat_text]{ellmer::batch_chat_text()}}). Defaults to
 \code{"textscale_annotations.json"} in the current working directory.
 Deleted automatically once the batch completes and results are
 written to \code{cache}. Set to \code{NULL} to disable checkpointing.
 Ignored when \code{parallel = TRUE}.}
 
-\item{parallel}{Logical. If \code{FALSE} (the default), annotations are
+\item{parallel}{Logical. If \code{FALSE}, annotations are
 submitted via the OpenAI Batch API at 50\% of standard prices.
-Set to \code{TRUE} to use \code{\link[ellmer:parallel_chat]{ellmer::parallel_chat_text()}} for immediate
+If \code{TRUE} (the default), annotations are submitted via \code{\link[ellmer:parallel_chat_text]{ellmer::parallel_chat_text()}} for immediate
 results at standard prices.}
 
 \item{cache}{Optional path to an \code{.rds} file. If the file exists,
@@ -88,7 +88,7 @@ changes; externally supplied caches (no hash attribute) bypass
 this check.}
 
 \item{...}{Additional arguments passed to
-\code{\link[ellmer:batch_chat]{ellmer::batch_chat_text()}} or \code{\link[ellmer:parallel_chat]{ellmer::parallel_chat_text()}}.}
+\code{\link[ellmer:batch_chat_text]{ellmer::batch_chat_text()}} or \code{\link[ellmer:parallel_chat_text]{ellmer::parallel_chat_text()}}.}
 }
 \value{
 The input \code{comparisons} tibble with an additional \code{winner}
@@ -113,11 +113,11 @@ column in \code{comparisons} with \code{{{column_name}}} syntax (most
 commonly \code{{{text_a}}} and \code{{{text_b}}}).
 
 By default, annotations are submitted via the OpenAI Batch API
-(\code{\link[ellmer:batch_chat]{ellmer::batch_chat_text()}}), which is 50\% cheaper than standard
+(\code{\link[ellmer:batch_chat_text]{ellmer::batch_chat_text()}}), which is 50\% cheaper than standard
 pricing but may take up to 24 hours to complete. The \code{path} argument
 checkpoints batch progress to a \code{.json} file so interrupted jobs can
 be resumed without re-calling the API. Set \code{parallel = TRUE} to use
-\code{\link[ellmer:parallel_chat]{ellmer::parallel_chat_text()}} instead, which returns results
+\code{\link[ellmer:parallel_chat_text]{ellmer::parallel_chat_text()}} instead, which returns results
 immediately at standard API prices.
 
 Before sending requests to the API, the function prints an estimated

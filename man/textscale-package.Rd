@@ -19,5 +19,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Joseph T. Ornstein \email{jornstein@uga.edu}
 
+Authors:
+\itemize{
+  \item Joseph T. Ornstein \email{jornstein@uga.edu}
+}
+
 }
 \keyword{internal}
