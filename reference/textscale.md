@@ -23,7 +23,7 @@ textscale(
   embeddings_cache = "textscale_embeddings.rds",
   annotations_cache = "textscale_annotations.rds",
   annotations_path = "textscale_annotations.json",
-  parallel = FALSE,
+  parallel = TRUE,
   allow_ties = TRUE,
   method = "ridge",
   ci = TRUE,
@@ -132,8 +132,9 @@ textscale(
 
 - parallel:
 
-  Logical. If `FALSE` (the default), annotations are submitted via the
-  OpenAI Batch API at 50% of standard prices. Set to `TRUE` to use
+  Logical. If `FALSE`, annotations are submitted via the OpenAI Batch
+  API at 50% of standard prices. If `TRUE` (the default) annotations
+  submitted via
   [`ellmer::parallel_chat_text()`](https://ellmer.tidyverse.org/reference/parallel_chat.html)
   for immediate results at standard prices.
 

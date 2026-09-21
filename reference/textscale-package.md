@@ -17,3 +17,7 @@ Useful links:
 ## Author
 
 **Maintainer**: Joseph T. Ornstein <jornstein@uga.edu>
+
+Authors:
+
+- Joseph T. Ornstein <jornstein@uga.edu>

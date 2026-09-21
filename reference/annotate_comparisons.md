@@ -16,7 +16,7 @@ annotate_comparisons(
   system_prompt = NULL,
   allow_ties = TRUE,
   path = "textscale_annotations.json",
-  parallel = FALSE,
+  parallel = TRUE,
   cache = NULL,
   ...
 )
@@ -97,8 +97,9 @@ annotate_comparisons(
 
 - parallel:
 
-  Logical. If `FALSE` (the default), annotations are submitted via the
-  OpenAI Batch API at 50% of standard prices. Set to `TRUE` to use
+  Logical. If `FALSE`, annotations are submitted via the OpenAI Batch
+  API at 50% of standard prices. If `TRUE` (the default), annotations
+  are submitted via
   [`ellmer::parallel_chat_text()`](https://ellmer.tidyverse.org/reference/parallel_chat.html)
   for immediate results at standard prices.
 

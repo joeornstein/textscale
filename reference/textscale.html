@@ -65,7 +65,7 @@ comparisons, and returns scores for every document.</p>
 <span>  embeddings_cache <span class="op">=</span> <span class="st">"textscale_embeddings.rds"</span>,</span>
 <span>  annotations_cache <span class="op">=</span> <span class="st">"textscale_annotations.rds"</span>,</span>
 <span>  annotations_path <span class="op">=</span> <span class="st">"textscale_annotations.json"</span>,</span>
-<span>  parallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  parallel <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  allow_ties <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"ridge"</span>,</span>
 <span>  ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -170,9 +170,9 @@ Set to <code>NULL</code> to disable checkpointing. Ignored when
 
 
 <dt id="arg-parallel">parallel<a class="anchor" aria-label="anchor" href="#arg-parallel"></a></dt>
-<dd><p>Logical. If <code>FALSE</code> (the default), annotations are
+<dd><p>Logical. If <code>FALSE</code>, annotations are
 submitted via the OpenAI Batch API at 50% of standard prices.
-Set to <code>TRUE</code> to use <code><a href="https://ellmer.tidyverse.org/reference/parallel_chat.html" class="external-link">ellmer::parallel_chat_text()</a></code> for immediate
+If <code>TRUE</code> (the default) annotations submitted via <code><a href="https://ellmer.tidyverse.org/reference/parallel_chat.html" class="external-link">ellmer::parallel_chat_text()</a></code> for immediate
 results at standard prices.</p></dd>
 
 
@@ -260,7 +260,7 @@ plot.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>
