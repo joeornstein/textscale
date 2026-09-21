@@ -1,3 +1,5 @@
+# textscale (development version)
+
 # textscale (development)
 
 * `textscale()`, `get_embeddings()`, and `annotate_comparisons()` gain a
