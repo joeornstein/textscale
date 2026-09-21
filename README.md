@@ -3,7 +3,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-textscale measures latent quantities from text — things like ideological
+`textscale` measures latent quantities from text — things like ideological
 tone, argument persuasiveness, or ad negativity — by combining pairwise
 comparisons with text embeddings. You provide a collection of documents
 and a question (e.g., *"Which ad is more negative?"*). An LLM annotates
@@ -98,5 +98,4 @@ to scale new documents without any additional LLM calls.
 
 If you use textscale in published research, please cite:
 
-> Ornstein, Joseph T. (2026). *textscale: Measure Latent Quantities from
-> Text Using Pairwise Comparisons*. R package version 0.0.0.9000.
+> Ornstein, Joseph T. (2026). "Scaling Documents with Pairwise Comparisons and Embeddings"
