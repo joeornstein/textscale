@@ -6,6 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Measure Latent Quantities from Text Using Pairwise Comparisons • textscale</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -59,7 +64,7 @@
 </div>
 <!-- badges: start -->
 <!-- badges: end -->
-<p>textscale measures latent quantities from text — things like ideological tone, argument persuasiveness, or ad negativity — by combining pairwise comparisons with text embeddings. You provide a collection of documents and a question (e.g., <em>“Which ad is more negative?”</em>). An LLM annotates a sample of document pairs. textscale then fits a ridge logistic regression on embedding differences to identify the latent dimension, and uses it to score any document — including ones never directly compared.</p>
+<p><code>textscale</code> measures latent quantities from text — things like ideological tone, argument persuasiveness, or ad negativity — by combining pairwise comparisons with text embeddings. You provide a collection of documents and a question (e.g., <em>“Which ad is more negative?”</em>). An LLM annotates a sample of document pairs. textscale then fits a ridge logistic regression on embedding differences to identify the latent dimension, and uses it to score any document — including ones never directly compared.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -146,7 +151,7 @@
 </h2>
 <p>If you use textscale in published research, please cite:</p>
 <blockquote>
-<p>Ornstein, Joseph T. (2026). <em>textscale: Measure Latent Quantities from Text Using Pairwise Comparisons</em>. R package version 0.0.0.9000.</p>
+<p>Ornstein, Joseph T. (2026). “Scaling Documents with Pairwise Comparisons and Embeddings”</p>
 </blockquote>
 </div>
 </div>
