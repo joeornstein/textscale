@@ -17,10 +17,16 @@
 # Published OpenAI prices in USD per million tokens (standard rate).
 # Batch API is 50% cheaper. Update as prices change.
 .model_prices <- list(
+  "gpt-6-astra"  = c(input = 10.00, output = 50.00),
+  "gpt-6-sol"    = c(input = 4.00, output = 20.00),
+  "gpt-6-terra"  = c(input = 2.00, output = 12.00),
+  "gpt-6-luna"   = c(input = 0.20, output = 1.20),
+  "gpt-5.5"      = c(input = 5.00, output = 30.00),
   "gpt-5.4"      = c(input = 2.50, output = 15.00),
   "gpt-5.4-mini" = c(input = 0.75, output =  4.50),
   "gpt-5.4-nano" = c(input = 0.20, output =  1.25),
   "gpt-5.2"      = c(input = 1.75, output = 14.00),
+  "gpt-5.1"      = c(input = 1.25, output = 10.00),
   "gpt-5"        = c(input = 1.25, output = 10.00),
   "gpt-5-mini"   = c(input = 0.25, output =  2.00),
   "gpt-5-nano"   = c(input = 0.05, output =  0.40),

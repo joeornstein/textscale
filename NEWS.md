@@ -1,4 +1,6 @@
-# textscale (development version)
+# textscale (0.0.0.9009)
+
+- `parallel = TRUE` now default
 
 # textscale (development)
 
