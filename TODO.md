@@ -12,3 +12,17 @@ correlated (same doc appears in multiple folds’ train sets), so the
 independence assumption in the CI/ICI is mildly violated.
 
 Consider a single *path* for caching.
+
+**Informative error when API requests fail.** Right now, if every
+request in
+[`annotate_comparisons()`](https://joeornstein.github.io/textscale/reference/annotate_comparisons.md)
+errors (e.g. HTTP 401 `invalid_api_key` from a revoked/expired
+`OPENAI_API_KEY`), ellmer’s `parallel_chat_text()` only warns
+`"N requests errored"`, every `winner` comes back `NA`, and the function
+still reports “N annotations completed.” Instead, inspect the failed
+responses in `.parallel_chat_text()` / `.batch_chat_text()` and surface
+the underlying HTTP status and message. At minimum: stop with a clear
+message on 401 (“OpenAI rejected your API key — check `OPENAI_API_KEY`
+in your .Renviron”) and on 429/quota errors; if only some requests fail,
+warn with a count and the first error message. Consider a cheap
+key-check request before launching a large parallel/batch job.
