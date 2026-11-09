@@ -15,7 +15,7 @@ the API and appended to the cache before returning."><meta property="og:image" c
 
     <a class="navbar-brand me-2" href="../index.html">textscale</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9009</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9010</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,7 +75,13 @@ the API and appended to the cache before returning.</p>
 <dd><p>Optional path to an <code>.rds</code> file. If the file exists,
 cached embeddings matching <code>documents</code> (by row name) are reused.
 Any new documents are fetched and written back to the cache. If
-<code>NULL</code>, embeddings are always computed fresh without caching.</p></dd>
+<code>NULL</code>, embeddings are always computed fresh without caching.
+Embeddings are stored separately for each combination of <code>type</code>,
+<code>model</code>, and any arguments in <code>...</code> that affect the vectors, so one
+file can hold results from several models without mixing them.
+Files written by earlier versions of textscale do not record their
+model; they trigger a warning and are assumed to match the current
+call.</p></dd>
 
 
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>

@@ -111,9 +111,12 @@ annotate_comparisons(
   `winner`; only rows without a cache hit are sent to the LLM. The
   updated result (cached + new) is written back to `cache` after
   annotation. If `cache` is `NULL` all rows are annotated and nothing is
-  written to disk. Caches written by textscale carry a prompt hash and
-  will be ignored if the prompt changes; externally supplied caches (no
-  hash attribute) bypass this check.
+  written to disk. Annotations are stored separately for each
+  combination of `model` and prompt, so changing either starts fresh
+  without discarding earlier results, and switching back reuses them. An
+  externally supplied data frame with `text_a`, `text_b`, and `winner`
+  columns (and no `prompt_hash` attribute) is reused regardless of
+  `model` and prompt, then stored under the current settings.
 
 - ...:
 

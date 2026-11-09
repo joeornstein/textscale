@@ -31,7 +31,12 @@ get_embeddings(
   Optional path to an `.rds` file. If the file exists, cached embeddings
   matching `documents` (by row name) are reused. Any new documents are
   fetched and written back to the cache. If `NULL`, embeddings are
-  always computed fresh without caching.
+  always computed fresh without caching. Embeddings are stored
+  separately for each combination of `type`, `model`, and any arguments
+  in `...` that affect the vectors, so one file can hold results from
+  several models without mixing them. Files written by earlier versions
+  of textscale do not record their model; they trigger a warning and are
+  assumed to match the current call.
 
 - type:
 
