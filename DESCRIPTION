@@ -1,6 +1,6 @@
 Package: textscale
 Title: Measure Latent Quantities from Text Using Pairwise Comparisons
-Version: 0.0.0.9009
+Version: 0.0.0.9010
 Authors@R: 
     person("Joseph T.", "Ornstein", , "jornstein@uga.edu", role = c("aut", "cre"))
 Description: Implements a method for measuring latent quantities (e.g.,
@@ -35,6 +35,6 @@ Config/testthat/edition: 3
 VignetteBuilder: knitr
 LazyData: true
 Depends: 
-    R (>= 3.5)
+    R (>= 4.3.0)
 URL: https://joeornstein.github.io/textscale/
 Config/roxygen2/version: 8.1.0

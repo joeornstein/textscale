@@ -1,7 +1,27 @@
+# Null-coalescing operator. In base R only from 4.4.0.
+`%||%` <- function(x, y) if (is.null(x)) y else x
+
 # Create the parent directory of a file path if it does not already exist.
 .ensure_dir <- function(path) {
   dir <- dirname(path)
   if (!dir.exists(dir)) dir.create(dir, recursive = TRUE)
+}
+
+# Cache files hold one entry per hash of whatever determines the result
+# (model, prompt, ...), so results from different settings coexist in the
+# same file and are never mixed.
+.new_cache <- function() structure(list(), class = "textscale_cache")
+
+.is_cache <- function(x) inherits(x, "textscale_cache")
+
+.read_cache <- function(path) {
+  if (is.null(path) || !file.exists(path)) return(NULL)
+  readRDS(path)
+}
+
+.write_cache <- function(store, path) {
+  .ensure_dir(path)
+  saveRDS(store, path)
 }
 
 # Compute an MD5 hash of one or more strings (concatenated).

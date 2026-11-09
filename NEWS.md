@@ -1,3 +1,18 @@
+# textscale (0.0.0.9010)
+
+- Annotation and embedding caches are now keyed by model as well as by
+  document. Previously, changing `llm_model` or `embedding_model` silently
+  reused results from the old model. A cache file now holds a separate entry
+  for each model and prompt, so switching back reuses earlier results.
+  Annotation caches from earlier versions are ignored once and replaced.
+  Embedding caches from earlier versions are reused with a warning, since
+  they do not record their model.
+
+- Annotation caches now keep pairs that are not part of the current run.
+
+- Now requires R >= 4.3.0, and no longer relies on `%||%` from base R, which
+  broke printing `validate_model()` results on R < 4.4.
+
 # textscale (0.0.0.9009)
 
 - `parallel = TRUE` now default

@@ -82,6 +82,9 @@
   )
 }
 
+# Identify a comparison by its ordered document pair.
+.pair_key <- function(x) paste(x$text_a, x$text_b, sep = "\t")
+
 #' Annotate pairwise comparisons using an LLM
 #'
 #' Submits each comparison pair to an LLM and records which document
@@ -158,10 +161,13 @@
 #'   reuse the stored `winner`; only rows without a cache hit are sent
 #'   to the LLM. The updated result (cached + new) is written back to
 #'   `cache` after annotation. If `cache` is `NULL` all rows are
-#'   annotated and nothing is written to disk. Caches written by
-#'   textscale carry a prompt hash and will be ignored if the prompt
-#'   changes; externally supplied caches (no hash attribute) bypass
-#'   this check.
+#'   annotated and nothing is written to disk. Annotations are stored
+#'   separately for each combination of `model` and prompt, so changing
+#'   either starts fresh without discarding earlier results, and
+#'   switching back reuses them. An externally supplied data frame with
+#'   `text_a`, `text_b`, and `winner` columns (and no `prompt_hash`
+#'   attribute) is reused regardless of `model` and prompt, then stored
+#'   under the current settings.
 #' @param ... Additional arguments passed to
 #'   [ellmer::batch_chat_text()] or [ellmer::parallel_chat_text()].
 #'
@@ -213,28 +219,48 @@ annotate_comparisons <- function(
   }
 
   hash <- if (document_type == "image") {
-    .prompt_hash(document_type, resize, system_prompt)
+    .prompt_hash(document_type, resize, system_prompt, model)
   } else {
-    .prompt_hash(prompt, system_prompt)
+    .prompt_hash(prompt, system_prompt, model)
   }
 
   # Start with all winners unknown
   comparisons$winner <- NA_character_
 
-  # Recover cached winners, but only if the cache was created with the
-  # same prompt and system_prompt (checked via stored MD5 hash attribute).
-  if (!is.null(cache) && file.exists(cache)) {
-    cached      <- readRDS(cache)
-    cached_hash <- attr(cached, "prompt_hash")
-    if (!is.null(cached_hash) && !identical(cached_hash, hash)) {
-      message("Prompt has changed; ignoring cached annotations.")
-      cached <- NULL
-    } else if ("winner" %in% names(cached)) {
-      key_new    <- paste(comparisons$text_a, comparisons$text_b, sep = "\t")
-      key_cached <- paste(cached$text_a,      cached$text_b,      sep = "\t")
-      idx <- match(key_new, key_cached)
-      comparisons$winner <- cached$winner[idx]
+  # Recover cached winners, using only the entry for this model and prompt.
+  store  <- .read_cache(cache)
+  cached <- NULL
+  if (.is_cache(store)) {
+    cached <- store[[hash]]
+  } else {
+    if (is.data.frame(store)) {
+      if (is.null(attr(store, "prompt_hash"))) {
+        cached <- store
+      } else {
+        message(
+          "Annotation cache was written by an earlier version of textscale ",
+          "that did not record the model; ignoring it."
+        )
+      }
     }
+    store <- .new_cache()
+  }
+
+  if ("winner" %in% names(cached)) {
+    idx <- match(.pair_key(comparisons), .pair_key(cached))
+    comparisons$winner <- cached$winner[idx]
+  }
+
+  # Keep previously cached pairs that are not part of this run.
+  save_cache <- function() {
+    if (is.null(cache)) return(invisible())
+    columns <- c("text_a", "text_b", "winner")
+    entry   <- as.data.frame(comparisons)[columns]
+    if (all(columns %in% names(cached))) {
+      entry <- rbind(entry, as.data.frame(cached)[columns])
+    }
+    store[[hash]] <- entry[!duplicated(.pair_key(entry)), , drop = FALSE]
+    .write_cache(store, cache)
   }
 
   needs_annotation <- is.na(comparisons$winner)
@@ -245,11 +271,7 @@ annotate_comparisons <- function(
   if (n_new    > 0) message(n_new,    " comparison(s) require annotation.")
 
   if (n_new == 0) {
-    if (!is.null(cache)) {
-      attr(comparisons, "prompt_hash") <- hash
-      .ensure_dir(cache)
-      saveRDS(comparisons, cache)
-    }
+    save_cache()
     return(comparisons)
   }
 
@@ -316,11 +338,7 @@ annotate_comparisons <- function(
     ))
   }
 
-  if (!is.null(cache)) {
-    attr(comparisons, "prompt_hash") <- hash
-    .ensure_dir(cache)
-    saveRDS(comparisons, cache)
-  }
+  save_cache()
 
   # Batch checkpoint is obsolete once results are written to the cache;
   # leaving it behind causes ellmer::batch_chat_text() to error on the

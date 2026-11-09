@@ -83,6 +83,12 @@
 #'   cached embeddings matching `documents` (by row name) are reused.
 #'   Any new documents are fetched and written back to the cache. If
 #'   `NULL`, embeddings are always computed fresh without caching.
+#'   Embeddings are stored separately for each combination of `type`,
+#'   `model`, and any arguments in `...` that affect the vectors, so one
+#'   file can hold results from several models without mixing them.
+#'   Files written by earlier versions of textscale do not record their
+#'   model; they trigger a warning and are assumed to match the current
+#'   call.
 #' @param type One of `"text"` (default) or `"image"`. `"text"` embeds
 #'   `documents` via [fuzzylink::get_embeddings()] (OpenAI/Mistral text
 #'   embeddings). `"image"` treats `documents` as local image file paths
@@ -105,10 +111,26 @@ get_embeddings <- function(documents, cache = NULL, type = c("text", "image"),
   type <- match.arg(type)
   fetch_fn <- if (type == "image") .fetch_image_embeddings else .fetch_embeddings
 
-  cached <- NULL
-  if (!is.null(cache) && file.exists(cache)) {
-    cached <- readRDS(cache)
+  key    <- .embedding_cache_key(type, model, list(...))
+  store  <- .read_cache(cache)
+  legacy <- is.matrix(store)
+
+  if (legacy) {
+    warning(
+      "Embeddings cache '", cache, "' does not record which model produced ",
+      "it. Assuming it matches the current call; delete the file if not.",
+      call. = FALSE
+    )
+    legacy_matrix <- store
+    store <- .new_cache()
+    store[[key]] <- legacy_matrix
+  } else if (is.null(store)) {
+    store <- .new_cache()
+  } else if (!.is_cache(store)) {
+    stop("'", cache, "' is not a textscale embeddings cache.", call. = FALSE)
   }
+
+  cached <- store[[key]]
 
   new_documents <- if (!is.null(cached)) {
     documents[!documents %in% rownames(cached)]
@@ -127,12 +149,28 @@ get_embeddings <- function(documents, cache = NULL, type = c("text", "image"),
     new_emb <- do.call(fetch_fn, fetch_args)
 
     cached <- if (!is.null(cached)) rbind(cached, new_emb) else new_emb
-
-    if (!is.null(cache)) {
-      .ensure_dir(cache)
-      saveRDS(cached, cache)
-    }
+    store[[key]] <- cached
   }
 
+  if (!is.null(cache) && (n_new > 0 || legacy)) .write_cache(store, cache)
+
   cached[documents, , drop = FALSE]
+}
+
+# Hash of everything that determines the embedding vectors. A NULL model is
+# resolved to its default so that it matches the same model named explicitly.
+# Arguments that only affect how the request is made are left out.
+.embedding_cache_key <- function(type, model, extra) {
+  model <- model %||% c(
+    text  = "text-embedding-3-large",
+    image = "google/gemini-embedding-2"
+  )[[type]]
+
+  request_only <- c("chunk_size", "parallel", "cache")
+  arg_names <- names(extra) %||% rep("", length(extra))
+  keep  <- !arg_names %in% request_only & !grepl("api_key", arg_names, fixed = TRUE)
+  extra <- extra[keep]
+  extra <- extra[order(names(extra) %||% character())]
+
+  .prompt_hash(type, model, paste(deparse(extra), collapse = ""))
 }

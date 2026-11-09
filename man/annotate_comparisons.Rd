@@ -82,10 +82,13 @@ cached annotations are matched to the incoming \code{comparisons} by
 reuse the stored \code{winner}; only rows without a cache hit are sent
 to the LLM. The updated result (cached + new) is written back to
 \code{cache} after annotation. If \code{cache} is \code{NULL} all rows are
-annotated and nothing is written to disk. Caches written by
-textscale carry a prompt hash and will be ignored if the prompt
-changes; externally supplied caches (no hash attribute) bypass
-this check.}
+annotated and nothing is written to disk. Annotations are stored
+separately for each combination of \code{model} and prompt, so changing
+either starts fresh without discarding earlier results, and
+switching back reuses them. An externally supplied data frame with
+\code{text_a}, \code{text_b}, and \code{winner} columns (and no \code{prompt_hash}
+attribute) is reused regardless of \code{model} and prompt, then stored
+under the current settings.}
 
 \item{...}{Additional arguments passed to
 \code{\link[ellmer:batch_chat_text]{ellmer::batch_chat_text()}} or \code{\link[ellmer:parallel_chat_text]{ellmer::parallel_chat_text()}}.}

@@ -24,7 +24,107 @@ test_that("cache file is written after annotation", {
 
   result <- annotate_comparisons(comparisons, instructions = "?", cache = tmp_cache, parallel = TRUE)
   expect_true(file.exists(tmp_cache))
-  expect_equal(readRDS(tmp_cache), result)
+  store <- readRDS(tmp_cache)
+  expect_s3_class(store, "textscale_cache")
+  expect_length(store, 1)
+  expect_equal(store[[1]]$text_a, result$text_a)
+  expect_equal(store[[1]]$winner, result$winner)
+})
+
+test_that("changing the model does not reuse or discard cached annotations", {
+  tmp_cache <- tempfile(fileext = ".rds")
+  on.exit(unlink(tmp_cache))
+
+  answer <- "A"
+  n_calls <- 0L
+  local_mocked_bindings(
+    .chat_openai = function(...) NULL,
+    .parallel_chat_text = function(chat, prompts, ...) {
+      n_calls <<- n_calls + 1L
+      rep(answer, length(prompts))
+    }
+  )
+  annotate <- function(model) {
+    suppressMessages(annotate_comparisons(
+      comparisons, instructions = "?", model = model,
+      cache = tmp_cache, parallel = TRUE
+    ))
+  }
+
+  first <- annotate("model-one")
+  answer <- "B"
+  second <- annotate("model-two")
+  expect_equal(n_calls, 2L)
+  expect_true(all(first$winner == "A"))
+  expect_true(all(second$winner == "B"))
+  expect_length(readRDS(tmp_cache), 2)
+
+  # Switching back is a pure cache hit
+  third <- annotate("model-one")
+  expect_equal(n_calls, 2L)
+  expect_true(all(third$winner == "A"))
+})
+
+test_that("changing the prompt does not reuse cached annotations", {
+  tmp_cache <- tempfile(fileext = ".rds")
+  on.exit(unlink(tmp_cache))
+
+  n_calls <- 0L
+  local_mocked_bindings(
+    .chat_openai = function(...) NULL,
+    .parallel_chat_text = function(chat, prompts, ...) {
+      n_calls <<- n_calls + 1L
+      rep("A", length(prompts))
+    }
+  )
+
+  for (question in c("Which is bigger?", "Which is older?")) {
+    suppressMessages(annotate_comparisons(
+      comparisons, instructions = question, cache = tmp_cache, parallel = TRUE
+    ))
+  }
+  expect_equal(n_calls, 2L)
+})
+
+test_that("cached pairs outside the current run are kept", {
+  tmp_cache <- tempfile(fileext = ".rds")
+  on.exit(unlink(tmp_cache))
+
+  local_mocked_bindings(
+    .chat_openai = function(...) NULL,
+    .parallel_chat_text = function(chat, prompts, ...) rep("A", length(prompts))
+  )
+
+  suppressMessages({
+    annotate_comparisons(comparisons, instructions = "?", cache = tmp_cache,
+                         parallel = TRUE)
+    annotate_comparisons(comparisons[1, ], instructions = "?", cache = tmp_cache,
+                         parallel = TRUE)
+  })
+  expect_equal(nrow(readRDS(tmp_cache)[[1]]), nrow(comparisons))
+})
+
+test_that("old-format hashed caches are ignored", {
+  tmp_cache <- tempfile(fileext = ".rds")
+  on.exit(unlink(tmp_cache))
+
+  old <- comparisons
+  old$winner <- "B"
+  attr(old, "prompt_hash") <- "old-hash"
+  saveRDS(old, tmp_cache)
+
+  local_mocked_bindings(
+    .chat_openai = function(...) NULL,
+    .parallel_chat_text = function(chat, prompts, ...) rep("A", length(prompts))
+  )
+
+  expect_message(
+    result <- annotate_comparisons(comparisons, instructions = "?",
+                                   cache = tmp_cache, parallel = TRUE),
+    "earlier version"
+  )
+  expect_true(all(result$winner == "A"))
+  expect_s3_class(readRDS(tmp_cache), "textscale_cache")
 })
 
 # --- allow_ties ---------------------------------------------------------------

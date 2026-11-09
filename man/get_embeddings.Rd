@@ -19,7 +19,13 @@ get_embeddings(
 \item{cache}{Optional path to an \code{.rds} file. If the file exists,
 cached embeddings matching \code{documents} (by row name) are reused.
 Any new documents are fetched and written back to the cache. If
-\code{NULL}, embeddings are always computed fresh without caching.}
+\code{NULL}, embeddings are always computed fresh without caching.
+Embeddings are stored separately for each combination of \code{type},
+\code{model}, and any arguments in \code{...} that affect the vectors, so one
+file can hold results from several models without mixing them.
+Files written by earlier versions of textscale do not record their
+model; they trigger a warning and are assumed to match the current
+call.}
 
 \item{type}{One of \code{"text"} (default) or \code{"image"}. \code{"text"} embeds
 \code{documents} via \code{\link[fuzzylink:get_embeddings]{fuzzylink::get_embeddings()}} (OpenAI/Mistral text
