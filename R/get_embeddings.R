@@ -69,7 +69,7 @@
   mat
 }
 
-#' Get text embeddings with optional caching
+#' Get embeddings with optional caching
 #'
 #' A thin wrapper around [fuzzylink::get_embeddings()] that adds
 #' file-based caching. If `cache` points to an existing file, embeddings

@@ -1,4 +1,4 @@
-#' Measure a latent quantity from text
+#' Measure a latent quantity from documents
 #'
 #' Runs the full textscale pipeline in a single call: generates pairwise
 #' comparisons, retrieves embeddings, annotates pairs with an LLM, fits
@@ -68,7 +68,7 @@
 #' @param validate Logical. If `TRUE` (the default), [validate_model()]
 #'   is called on the held-out test split and its output is printed.
 #' @param allow_ties Logical. If `TRUE` (the default), the LLM may
-#'   respond with `"tie"` when the two texts are indistinguishable.
+#'   respond with `"tie"` when the two documents are indistinguishable.
 #'   Ties are automatically dropped before model fitting and
 #'   validation. Set to `FALSE` to force a choice between A and B.
 #'   Passed to [annotate_comparisons()].

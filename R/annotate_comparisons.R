@@ -157,7 +157,7 @@
 #'   results at standard prices.
 #' @param cache Optional path to an `.rds` file. If the file exists,
 #'   cached annotations are matched to the incoming `comparisons` by
-#'   `text_a` and `text_b`. Rows whose text pair is found in the cache
+#'   `text_a` and `text_b`. Rows whose document pair is found in the cache
 #'   reuse the stored `winner`; only rows without a cache hit are sent
 #'   to the LLM. The updated result (cached + new) is written back to
 #'   `cache` after annotation. If `cache` is `NULL` all rows are
@@ -172,7 +172,7 @@
 #'   [ellmer::batch_chat_text()] or [ellmer::parallel_chat_text()].
 #'
 #' @param allow_ties Logical. If `TRUE` (the default), the LLM may
-#'   respond with `"tie"` when the two texts are indistinguishable on
+#'   respond with `"tie"` when the two documents are indistinguishable on
 #'   the dimension of interest. Ties are recorded in the `winner`
 #'   column and automatically dropped by downstream functions
 #'   ([fit_model()], [validate_model()]). If `FALSE`, the system

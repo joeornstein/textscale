@@ -57,7 +57,7 @@ behaviour entirely. When \code{instructions} is supplied, it is
 prepended to \code{system_prompt}.}
 
 \item{allow_ties}{Logical. If \code{TRUE} (the default), the LLM may
-respond with \code{"tie"} when the two texts are indistinguishable on
+respond with \code{"tie"} when the two documents are indistinguishable on
 the dimension of interest. Ties are recorded in the \code{winner}
 column and automatically dropped by downstream functions
 (\code{\link[=fit_model]{fit_model()}}, \code{\link[=validate_model]{validate_model()}}). If \code{FALSE}, the system
@@ -78,7 +78,7 @@ results at standard prices.}
 
 \item{cache}{Optional path to an \code{.rds} file. If the file exists,
 cached annotations are matched to the incoming \code{comparisons} by
-\code{text_a} and \code{text_b}. Rows whose text pair is found in the cache
+\code{text_a} and \code{text_b}. Rows whose document pair is found in the cache
 reuse the stored \code{winner}; only rows without a cache hit are sent
 to the LLM. The updated result (cached + new) is written back to
 \code{cache} after annotation. If \code{cache} is \code{NULL} all rows are

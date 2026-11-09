@@ -2,7 +2,7 @@
 % Please edit documentation in R/textscale.R
 \name{textscale}
 \alias{textscale}
-\title{Measure a latent quantity from text}
+\title{Measure a latent quantity from documents}
 \usage{
 textscale(
   documents,
@@ -97,7 +97,7 @@ If \code{TRUE} (the default) annotations submitted via \code{\link[ellmer:parall
 results at standard prices.}
 
 \item{allow_ties}{Logical. If \code{TRUE} (the default), the LLM may
-respond with \code{"tie"} when the two texts are indistinguishable.
+respond with \code{"tie"} when the two documents are indistinguishable.
 Ties are automatically dropped before model fitting and
 validation. Set to \code{FALSE} to force a choice between A and B.
 Passed to \code{\link[=annotate_comparisons]{annotate_comparisons()}}.}

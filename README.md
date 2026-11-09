@@ -3,9 +3,9 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-`textscale` measures latent quantities from text — things like ideological
+`textscale` measures latent quantities from text and images — things like ideological
 tone, argument persuasiveness, or ad negativity — by combining pairwise
-comparisons with text embeddings. You provide a collection of documents
+comparisons with embeddings. You provide a collection of documents
 and a question (e.g., *"Which ad is more negative?"*). An LLM annotates
 a sample of document pairs. textscale then fits a ridge logistic
 regression on embedding differences to identify the latent dimension, and
@@ -78,7 +78,7 @@ The individual pipeline steps are also exported if you need finer control:
 | Function | Purpose |
 |----------|---------|
 | `generate_comparisons()` | Create train/test comparison pairs |
-| `get_embeddings()` | Retrieve text embeddings |
+| `get_embeddings()` | Retrieve embeddings |
 | `annotate_comparisons()` | Annotate pairs with an LLM |
 | `fit_model()` | Fit or refit the model |
 | `validate_model()` | Evaluate accuracy on held-out test pairs |

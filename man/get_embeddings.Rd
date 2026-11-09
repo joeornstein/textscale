@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_embeddings.R
 \name{get_embeddings}
 \alias{get_embeddings}
-\title{Get text embeddings with optional caching}
+\title{Get embeddings with optional caching}
 \usage{
 get_embeddings(
   documents,
