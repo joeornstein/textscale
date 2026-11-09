@@ -1,4 +1,4 @@
-# Get text embeddings with optional caching
+# Get embeddings with optional caching
 
 A thin wrapper around
 [`fuzzylink::get_embeddings()`](https://joeornstein.github.io/software/fuzzylink/reference/get_embeddings.html)

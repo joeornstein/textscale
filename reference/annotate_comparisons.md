@@ -78,9 +78,9 @@ annotate_comparisons(
 - allow_ties:
 
   Logical. If `TRUE` (the default), the LLM may respond with `"tie"`
-  when the two texts are indistinguishable on the dimension of interest.
-  Ties are recorded in the `winner` column and automatically dropped by
-  downstream functions
+  when the two documents are indistinguishable on the dimension of
+  interest. Ties are recorded in the `winner` column and automatically
+  dropped by downstream functions
   ([`fit_model()`](https://joeornstein.github.io/textscale/reference/fit_model.md),
   [`validate_model()`](https://joeornstein.github.io/textscale/reference/validate_model.md)).
   If `FALSE`, the system prompt instructs the LLM to choose A or B with
@@ -107,9 +107,9 @@ annotate_comparisons(
 
   Optional path to an `.rds` file. If the file exists, cached
   annotations are matched to the incoming `comparisons` by `text_a` and
-  `text_b`. Rows whose text pair is found in the cache reuse the stored
-  `winner`; only rows without a cache hit are sent to the LLM. The
-  updated result (cached + new) is written back to `cache` after
+  `text_b`. Rows whose document pair is found in the cache reuse the
+  stored `winner`; only rows without a cache hit are sent to the LLM.
+  The updated result (cached + new) is written back to `cache` after
   annotation. If `cache` is `NULL` all rows are annotated and nothing is
   written to disk. Annotations are stored separately for each
   combination of `model` and prompt, so changing either starts fresh

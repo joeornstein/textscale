@@ -1,13 +1,13 @@
 # textscale
 
-`textscale` measures latent quantities from text — things like
-ideological tone, argument persuasiveness, or ad negativity — by
-combining pairwise comparisons with text embeddings. You provide a
-collection of documents and a question (e.g., *“Which ad is more
-negative?”*). An LLM annotates a sample of document pairs. textscale
-then fits a ridge logistic regression on embedding differences to
-identify the latent dimension, and uses it to score any document —
-including ones never directly compared.
+`textscale` measures latent quantities from text and images — things
+like ideological tone, argument persuasiveness, or ad negativity — by
+combining pairwise comparisons with embeddings. You provide a collection
+of documents and a question (e.g., *“Which ad is more negative?”*). An
+LLM annotates a sample of document pairs. textscale then fits a ridge
+logistic regression on embedding differences to identify the latent
+dimension, and uses it to score any document — including ones never
+directly compared.
 
 ## Installation
 
@@ -85,7 +85,7 @@ control:
 | Function | Purpose |
 |----|----|
 | [`generate_comparisons()`](https://joeornstein.github.io/textscale/reference/generate_comparisons.md) | Create train/test comparison pairs |
-| [`get_embeddings()`](https://joeornstein.github.io/textscale/reference/get_embeddings.md) | Retrieve text embeddings |
+| [`get_embeddings()`](https://joeornstein.github.io/textscale/reference/get_embeddings.md) | Retrieve embeddings |
 | [`annotate_comparisons()`](https://joeornstein.github.io/textscale/reference/annotate_comparisons.md) | Annotate pairs with an LLM |
 | [`fit_model()`](https://joeornstein.github.io/textscale/reference/fit_model.md) | Fit or refit the model |
 | [`validate_model()`](https://joeornstein.github.io/textscale/reference/validate_model.md) | Evaluate accuracy on held-out test pairs |

@@ -116,7 +116,7 @@ prepended to <code>system_prompt</code>.</p></dd>
 
 <dt id="arg-allow-ties">allow_ties<a class="anchor" aria-label="anchor" href="#arg-allow-ties"></a></dt>
 <dd><p>Logical. If <code>TRUE</code> (the default), the LLM may
-respond with <code>"tie"</code> when the two texts are indistinguishable on
+respond with <code>"tie"</code> when the two documents are indistinguishable on
 the dimension of interest. Ties are recorded in the <code>winner</code>
 column and automatically dropped by downstream functions
 (<code><a href="fit_model.html">fit_model()</a></code>, <code><a href="validate_model.html">validate_model()</a></code>). If <code>FALSE</code>, the system
@@ -143,7 +143,7 @@ results at standard prices.</p></dd>
 <dt id="arg-cache">cache<a class="anchor" aria-label="anchor" href="#arg-cache"></a></dt>
 <dd><p>Optional path to an <code>.rds</code> file. If the file exists,
 cached annotations are matched to the incoming <code>comparisons</code> by
-<code>text_a</code> and <code>text_b</code>. Rows whose text pair is found in the cache
+<code>text_a</code> and <code>text_b</code>. Rows whose document pair is found in the cache
 reuse the stored <code>winner</code>; only rows without a cache hit are sent
 to the LLM. The updated result (cached + new) is written back to
 <code>cache</code> after annotation. If <code>cache</code> is <code>NULL</code> all rows are
